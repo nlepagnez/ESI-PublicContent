@@ -1,0 +1,5 @@
+DateChangedOrAdded,Cmdlets,ADObject
+2022-01-03,*-TransportRule,msExchTransportRule
+2022-01-03,*-ReceiveConnector,msExchSmtpReceiveConnector
+2022-01-03,*-RemoteDomain,msExchDomainContentConfig
+2022-01-03,*-MailboxExportRequest;*-MoveMailboxRequest,msExchMRSRequest
