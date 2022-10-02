@@ -1,0 +1,50 @@
+{
+    "SolutionMetadata":
+	{
+		"JSonVersion":"1.0",
+		"JsonUpdateDate":"27/09/2022",
+		"Description":"All Audit Functions around Management Roles",
+		"VersionInformation":{
+			"1.0":{
+				"Tracking":["First version of the file"],
+				"MigrationMessageFromLastVersion":"N/A"
+			}
+		}
+	},
+	"AuditFunctionProtectedArea":
+	{
+		"ContentCheckSum":""
+	},
+    "AuditFunctions":[
+        {
+			"Section":"MRA",
+			"Cmdlet":"Get-ManagementRoleAssignment",
+			"PropertySelection":["Name","Role","RoleAssigneeName","EffectiveUserName","RoleAssigneeType","CustomRecipientWriteScope","CustomConfigWriteScope","RecipientReadScope","ConfigReadScope","RecipientWriteScope","ConfigWriteScope","RoleAssignee","AssignmentMethod","WhenCreated","WhenChanged"],
+			"ProcessPerServer":"false",
+			"Deactivated":"false",
+			"ExplicitActivation":"false",
+			"ProcessingCategory":"All"
+		},
+		{
+			"Section":"MRCustom",
+			"Cmdlet":"Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false }",
+			"PropertySelection":["Name","RoleType","IsRootRole","IsEndUserRole","Parent","ImplicitRecipientReadScope","ImplicitRecipientWriteScope","ImplicitConfigReadScope","ImplicitConfigWriteScope","WhenCreated","WhenChanged"],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"All"
+		},
+		{
+			"Section":"MRCustomDetails",
+			"Cmdlet":"$result=@();$AllCustomMR=Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false };foreach ($CustomMR in $AllCustomMR) {$ParentRole = $CustomMR.Parent ; $result += Get-ManagementRole $CustomMR | Get-ManagementRoleEntry | select Role,Name,Type,WhenCreated,WhenChanged,@{Name=\"Parameters\";Expression={[string]::join(\";\",($_.Parameters))}} };$result",
+			"PropertySelection":["Role","Name","Type","WhenCreated","WhenChanged","Parameters"],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"All"
+		},
+		{
+			"Section":"MRScope",
+			"Cmdlet":"Get-Managementscope",
+			"PropertySelection":["Name","RecipientRoot","RecipientFilter","ServerFilter","DatabaseFilter","ScopeRestrictionType","Exclusive","WhenCreated","WhenChanged"],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"All"
+		}
+    ]
+}
