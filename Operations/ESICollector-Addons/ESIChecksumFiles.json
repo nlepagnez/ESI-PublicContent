@@ -1,0 +1,37 @@
+{
+    "UpdatedDate":  {
+                        "value":  "\/Date(1664913477573)\/",
+                        "DisplayHint":  2,
+                        "DateTime":  "Tuesday, October 4, 2022 9:57:57 PM"
+                    },
+    "Files":  [
+                  {
+                      "FileName":  "ESICollector-ExchangeGlobalConfiguration.json",
+                      "Checksum":  "D02436A290EA9F157332801974B3083378419F60D82F51E28292D8C5427A2359"
+                  },
+                  {
+                      "FileName":  "ESICollector-RoleAndGroupConfiguration.json",
+                      "Checksum":  "FF1BD101378400F34E566EF134E892D5A3EC353AA9013D5DEFCEAABED9EE4996"
+                  },
+                  {
+                      "FileName":  "ESICollector-TransportConfiguration.json",
+                      "Checksum":  "67FD96071C7AEBC36FD0DCF60DD238EEA44DFF704DA8087CDE75C70AE1E65994"
+                  },
+                  {
+                      "FileName":  "ESICollector-ManagementRoles.json",
+                      "Checksum":  "B740AAD3159BAE5AD304D203751E7B6EAA51587BD77AD64447323AFE419BEC8D"
+                  },
+                  {
+                      "FileName":  "ESICollector-POPIMAPConfiguration.json",
+                      "Checksum":  "A875410EF36DEA9E50F32D0ED6A668A6C3320BE8536B5E977167EF2391A963CF"
+                  },
+                  {
+                      "FileName":  "ESICollector-VIPAudit.json",
+                      "Checksum":  "A1CBFCFF9F3C3AEECB8A014913C47FC2DC06C1D2C65EA1B7A43D2F667E068B77"
+                  },
+                  {
+                      "FileName":  "ESICollector-DAGMailboxDatabaseConfiguration.json",
+                      "Checksum":  "F308247467AB4FEDD7202029A5407D60E93D6FFDEEACCD4728957F85BBFF5FF4"
+                  }
+              ]
+}
