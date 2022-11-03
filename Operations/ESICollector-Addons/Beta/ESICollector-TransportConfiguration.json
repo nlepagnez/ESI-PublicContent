@@ -5,6 +5,10 @@
 		"JsonUpdateDate":"27/09/2022",
 		"Description":"All Audit Functions around Transport configuration",
 		"VersionInformation":{
+			"1.1":{
+				"Tracking":["We change how to process TransportRule information"],
+				"MigrationMessageFromLastVersion":"Replace TransportRule section"
+			},
 			"1.0":{
 				"Tracking":["First version of the file"],
 				"MigrationMessageFromLastVersion":"N/A"
@@ -13,7 +17,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"ED33FD0D28D7E1A4E356045321B373A19B89DD341292D1EF2977F8B48F4ED1F2"
+		"ContentCheckSum":"57E4827098C5900E831117375B8E7188C2E82752C49FD79EDB09A3D9D0762F1B"
 	},
     "AuditFunctions":[
         {
@@ -42,10 +46,10 @@
 			"Cmdlet":"Get-TransportRule",
 			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
-				{"Name":"SentToString", "Expression":"$_.SentTo.ToString()"},
-				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo.ToString()"},
-				{"Name":"CopyToString","Expression":"$_.CopyTo.ToString()"},
-				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo.ToString()"}
+				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
+				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
+				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
+				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"On-Premises"
@@ -55,10 +59,10 @@
 			"Cmdlet":"Get-TransportRule",
 			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
-				{"Name":"SentToString", "Expression":"$_.SentTo.ToString()"},
-				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo.ToString()"},
-				{"Name":"CopyToString","Expression":"$_.CopyTo.ToString()"},
-				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo.ToString()"}
+				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
+				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
+				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
+				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"Online"
