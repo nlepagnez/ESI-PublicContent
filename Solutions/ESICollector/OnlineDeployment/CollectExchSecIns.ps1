@@ -26,8 +26,11 @@ possibility of such damages
     The output a csv file of collected data
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez
-    Version : 7.3.1 - Released : NOT RELEASED - nilepagn
+    Version : 7.3.1 - Released : 28/11/2022 - nilepagn
         - Adding Version information for Script, used by updater to update script
+        - Correct a bug when Configuration cannot be loaded during Azure Automation execution
+        - Failover when Get-ADGroupMember doesn't work by using (Get-ADGroup).Members
+        - Possibility to use a Proxy for Invoke Web Requests (Proxy without authentication)
 
     Version : 7.3 - Released : 03/11/2022 - nilepagn
         - Adding TLS1.2 capability
@@ -773,7 +776,13 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         Write-LogMessage -Message ("Upload payload size is " + ($body.Length/1024).ToString("#.#") + "Kb")
 
         try {
-            $response = Invoke-WebRequest -Uri $uri -Method $method -ContentType $contentType -Headers $headers -Body $body -UseBasicParsing
+            if ($Useproxy)
+            {
+                $response = Invoke-WebRequest -Uri $uri -Method $method -ContentType $contentType -Headers $headers -Body $body -UseBasicParsing -Proxy $Script:ProxyUrl
+            }
+            else {
+                $response = Invoke-WebRequest -Uri $uri -Method $method -ContentType $contentType -Headers $headers -Body $body -UseBasicParsing
+            }
         }
         catch {
             if ($_.Exception.Message.startswith('The remote name could not be resolved'))
@@ -1476,7 +1485,14 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $TargetObject,
             $dnsrvobj
         )
-        $list = Get-ADGroupMember $TargetObject.SamAccountName -server $dnsrvobj
+
+        try {
+            $list = Get-ADGroupMember $TargetObject.SamAccountName -server $dnsrvobj
+        }
+        catch {
+            $list = (Get-ADGroup $TargetObject.SamAccountName -server $dnsrvobj).Members
+        }
+
         return $List
     }
 
@@ -1954,6 +1970,15 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             }
             else { $Script:FunctionsListWithoutInternet = $true }
 
+            if (-not [String]::IsNullOrEmpty($jsonConfig.Advanced.Useproxy)) {
+                $script:Useproxy = $jsonConfig.Advanced.Useproxy
+                if ($Useproxy) { 
+                    if (-not [string]::IsNullOrEmpty($jsonConfig.Advanced.ProxyUrl)) {$script:ProxyUrl = $jsonConfig.Advanced.ProxyUrl} 
+                    else { Throw "URL Proxy is needed when UseProxy is activated"}
+                }
+            } 
+
+
             if ($null -ne $jsonConfig.MGGraphAPIConnection) {
                 $Script:MGGraphAzureRMCertificate = $jsonConfig.MGGraphAPIConnection.MGGraphAzureRMCertificate
                 $Script:MGGraphAzureRMAppId = $jsonConfig.MGGraphAPIConnection.MGGraphAzureRMAppId
@@ -2160,7 +2185,14 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             # Retrieve File Checksum list
             
             try {
-                $WebResult = invoke-WebRequest -Uri "$GithubSourcePath/ESIChecksumFiles.json" -UseBasicParsing
+                if ($Useproxy)
+                {
+                    $WebResult = invoke-WebRequest -Uri "$GithubSourcePath/ESIChecksumFiles.json" -UseBasicParsing -Proxy $Script:ProxyUrl
+                }
+                else
+                {
+                    $WebResult = invoke-WebRequest -Uri "$GithubSourcePath/ESIChecksumFiles.json" -UseBasicParsing
+                }
             }
             catch {
                 Write-LogMessage -Message "Impossible to retrieve files from Online Github. Error : $($_.Exception)" -NoOutput -Level Warning; 
@@ -2206,7 +2238,14 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 {
                     $uri = "$GithubSourcePath/$($OnlineFile.FileName)"
                     try {
-                        $WebResult = invoke-WebRequest -Uri $uri -UseBasicParsing
+                        if ($Useproxy)
+                        {
+                            $WebResult = invoke-WebRequest -Uri $uri -UseBasicParsing -Proxy $Script:ProxyUrl
+                        }
+                        else
+                        {
+                            $WebResult = invoke-WebRequest -Uri $uri -UseBasicParsing
+                        }
                     }
                     catch {
                         Write-LogMessage -Message "Impossible to retrieve file $($OnlineFile.FileName) from Online Github. Error : $($_.Exception)" -NoOutput -Level Warning; 
@@ -2234,8 +2273,15 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         # Retrieve File Checksum list
         $GithubSourcePath = "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/"
         try {
-            $WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing
-        }
+            if ($Useproxy)
+            {
+                WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing -Proxy $Script:ProxyUrl
+            }
+            else
+            {
+                WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing 
+            }
+        }   
         catch {
             Write-LogMessage -Message "Impossible to retrieve files from Online Github. Error : $($_.Exception)" -NoOutput -Level Warning; 
             Throw "Impossible to load Audit Functions, Critical for collection. Error :" + $_
@@ -2280,7 +2326,13 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             
             $uri = $GithubSourcePath + $OnlineFile.FileName
             try {
-                $WebResult = invoke-WebRequest -Uri $uri -UseBasicParsing
+                if ($Useproxy)
+                {
+                    $WebResult = invoke-WebRequest -Uri $uri -UseBasicParsing -Proxy $Script:ProxyUrl
+                }
+                else {
+                    $WebResult = invoke-WebRequest -Uri $uri -UseBasicParsing
+                }
             }
             catch {
                 Write-LogMessage -Message "Impossible to retrieve file $($OnlineFile.FileName) from Online Github. Error : $($_.Exception)" -NoOutput -Level Warning; 
@@ -2487,7 +2539,8 @@ try {
 }
 catch {
     Write-LogMessage -Message "Configuration not loaded. Impossible to continue."
-    Stop-Transcript
+    if (-not $Global:isRunbook ) { Stop-Transcript }
+    throw "Fatal Error, unable to continue"
     return -1
 }
 
