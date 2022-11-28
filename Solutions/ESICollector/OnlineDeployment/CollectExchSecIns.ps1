@@ -1971,12 +1971,15 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             else { $Script:FunctionsListWithoutInternet = $true }
 
             if (-not [String]::IsNullOrEmpty($jsonConfig.Advanced.Useproxy)) {
-                $script:Useproxy = $jsonConfig.Advanced.Useproxy
+                $script:Useproxy = [Convert]::ToBoolean($jsonConfig.Advanced.Useproxy)
                 if ($Useproxy) { 
                     if (-not [string]::IsNullOrEmpty($jsonConfig.Advanced.ProxyUrl)) {$script:ProxyUrl = $jsonConfig.Advanced.ProxyUrl} 
                     else { Throw "URL Proxy is needed when UseProxy is activated"}
                 }
             } 
+            else {
+                $script:Useproxy = $false
+            }
 
 
             if ($null -ne $jsonConfig.MGGraphAPIConnection) {
