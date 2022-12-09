@@ -1,8 +1,19 @@
 # **Exchange Security Insight Collector Download**
 
-## Actual Version : 7.3.1
+## Actual Version : 7.3.2
 
 ## Upgrade paths
+
+### From 7.3.1 to 7.3.2
+
+#### **Configuration File**
+
+Parameters added in Advance Section
+
+#### **ESI Collector Script**
+
+Replace the old script version with the new one. nothing to modifiy in the script.
+
 
 ### From 7.3.0 to 7.3.1
 

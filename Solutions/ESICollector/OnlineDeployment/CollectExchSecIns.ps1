@@ -26,6 +26,10 @@ possibility of such damages
     The output a csv file of collected data
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez
+    Version : 7.3.2 - Released : 09/12/2022 - nilepagn
+        - Correct a bug when Without Internet and using Folder Add-ons
+        - Parametize the Max packet size sent to Sentinel
+
     Version : 7.3.1 - Released : 28/11/2022 - nilepagn
         - Adding Version information for Script, used by updater to update script
         - Correct a bug when Configuration cannot be loaded during Azure Automation execution
@@ -1981,6 +1985,21 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $script:Useproxy = $false
             }
 
+            if ($null -eq $jsonConfig.Advanced.MaximalSentinelPacketSize) {
+                $script:MaximalSentinelPacketSize = 31.9
+            } 
+            else {
+                if ($jsonConfig.Advanced.MaximalSentinelPacketSize -ge 32)
+                {
+                    Write-LogMessage -Message "Packet size $($jsonConfig.Advanced.MaximalSentinelPacketSize) greater than 31.9Kb. Maximum size for Sentinel is 31.9Kb."
+                    $script:MaximalSentinelPacketSize = 31.9
+                }
+                else
+                {
+                    [int] $Script:MaximalSentinelPacketSize = $jsonConfig.Advanced.MaximalSentinelPacketSize - 0.1
+                }
+            }
+
 
             if ($null -ne $jsonConfig.MGGraphAPIConnection) {
                 $Script:MGGraphAzureRMCertificate = $jsonConfig.MGGraphAPIConnection.MGGraphAzureRMCertificate
@@ -2581,7 +2600,7 @@ if (-not $Script:FunctionsListWithoutInternet)
     $FunctionList = LoadAuditFunctionsFromInternetRepository -ProcessingType $Script:ESIProcessingType -Beta:$Script:BetaActivated
 }
 else {
-    $FunctionList = LoadAuditFunctions -AuditFunctionList $Script:JSonAuditFunctionList -ProcessingType $Script:ESIProcessingType -FromAddOnFolder:$Script:FunctionsListInline
+    $FunctionList = LoadAuditFunctions -AuditFunctionList $Script:JSonAuditFunctionList -ProcessingType $Script:ESIProcessingType -FromAddOnFolder:(-not $Script:FunctionsListInline)
 }
 
 Write-LogMessage -Message ("Launch Data collection ...")
@@ -2667,11 +2686,12 @@ foreach ($OutputName in $Script:Results.Keys)
             $OutputSentinelAPI  = $OutputSentinelAPI -replace 'ESI', "ESI-$($Script:InstanceConfiguration.Category)-"
         }
 
-        $contentDivision = [math]::Ceiling([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length / (31.9 *1024*1024))
+        $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
+        $contentDivision = [math]::Ceiling($ResultLength / ($Script:MaximalSentinelPacketSize *1024*1024))
 
         if ($contentDivision -le 1)
         {
-            Write-LogMessage -Message ("Upload payload size is less than 32Mb. It will be sent in 1 segment")
+            Write-LogMessage -Message ("Upload payload size is less than $($Script:MaximalSentinelPacketSize)Mb. It will be sent in 1 segment")
             # Submit the data to the API endpoint
             Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
             -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
@@ -2680,7 +2700,7 @@ foreach ($OutputName in $Script:Results.Keys)
         }
         else {
             
-            Write-LogMessage -Message ("Upload payload size is " + ($body.Length/1024/1024).ToString("#.#") + "Mb, greater than 32Mb. It will be sent in $contentDivision segments")
+            Write-LogMessage -Message ("Upload payload size is " + ($ResultLength/1024/1024).ToString("#.#") + "Mb, greater than $($Script:MaximalSentinelPacketSize)Mb. It will be sent in $contentDivision segments")
 
             $maxCount = $script:Results[$OutputName].Count / $contentDivision
 
