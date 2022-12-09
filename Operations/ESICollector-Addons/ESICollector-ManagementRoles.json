@@ -5,6 +5,10 @@
 		"JsonUpdateDate":"27/09/2022",
 		"Description":"All Audit Functions around Management Roles",
 		"VersionInformation":{
+			"1.1":{
+				"Tracking":["Changing Properties of 'MRCustom'. Changing how to retrieve MRCustomDetails"],
+				"MigrationMessageFromLastVersion":"Replacing MRCustom and MRCustomDetails segments"
+			},
 			"1.0":{
 				"Tracking":["First version of the file"],
 				"MigrationMessageFromLastVersion":"N/A"
@@ -13,13 +17,13 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"922EA915A3976B27197D13657229AF47EEC56FF5F687DF0D06A41C785E72687C"
+		"ContentCheckSum":"F106802676C360A173CE94398D1DC4A712CC0E222D22FA7530C05D6B059145A6"
 	},
     "AuditFunctions":[
         {
 			"Section":"MRA",
 			"Cmdlet":"Get-ManagementRoleAssignment",
-			"PropertySelection":["Name","Role","RoleAssigneeName","EffectiveUserName","RoleAssigneeType","CustomRecipientWriteScope","CustomConfigWriteScope","RecipientReadScope","ConfigReadScope","RecipientWriteScope","ConfigWriteScope","RoleAssignee","AssignmentMethod","WhenCreated","WhenChanged"],
+			"PropertySelection":["Name","Role","RoleAssigneeName","EffectiveUserName","RoleAssigneeType","RoleAssignmentDelegationType","CustomRecipientWriteScope","CustomConfigWriteScope","RecipientReadScope","ConfigReadScope","RecipientWriteScope","ConfigWriteScope","RoleAssignee","AssignmentMethod","WhenCreated","WhenChanged"],
 			"ProcessPerServer":"false",
 			"Deactivated":"false",
 			"ExplicitActivation":"false",
@@ -28,13 +32,13 @@
 		{
 			"Section":"MRCustom",
 			"Cmdlet":"Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false }",
-			"PropertySelection":["Name","RoleType","IsRootRole","IsEndUserRole","Parent","ImplicitRecipientReadScope","ImplicitRecipientWriteScope","ImplicitConfigReadScope","ImplicitConfigWriteScope","WhenCreated","WhenChanged"],
+			"PropertySelection":["Name","RoleType","IsRootRole","IsEndUserRole","Parent","ImplicitRecipientReadScope","ImplicitRecipientWriteScope","ImplicitConfigReadScope","ImplicitConfigWriteScope","WhenCreated","WhenChanged", "propertyDescription"],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"All"
 		},
 		{
 			"Section":"MRCustomDetails",
-			"Cmdlet":"$result=@();$AllCustomMR=Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false };foreach ($CustomMR in $AllCustomMR) {$ParentRole = $CustomMR.Parent ; $result += Get-ManagementRole $CustomMR | Get-ManagementRoleEntry | select Role,Name,Type,WhenCreated,WhenChanged,@{Name=\"Parameters\";Expression={[string]::join(\";\",($_.Parameters))}} };$result",
+			"Cmdlet":"$result=@();$AllCustomMR=Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false };foreach ($CustomMR in $AllCustomMR) {$ParentRole = $CustomMR.Parent ; $result += Get-ManagementRoleEntry $CustomMR* | select Role,Name,Type,WhenCreated,WhenChanged,@{Name=\"Parameters\";Expression={[string]::join(\";\",($_.Parameters))}}, @{Name=\"ParentRole\";Expression={$ParentRole}} };$result",
 			"PropertySelection":["Role","Name","Type","WhenCreated","WhenChanged","Parameters"],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"All"
