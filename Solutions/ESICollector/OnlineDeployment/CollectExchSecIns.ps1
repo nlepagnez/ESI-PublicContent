@@ -122,7 +122,7 @@ Param (
     [switch] $GetVersion
 )
 
-$ESICollectorCurrentVersion = "7.3.1.0"
+$ESICollectorCurrentVersion = "7.3.2.1"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 #region CapabilitiesManagement
@@ -1985,18 +1985,18 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $script:Useproxy = $false
             }
 
-            if ($null -eq $jsonConfig.Advanced.MaximalSentinelPacketSize) {
-                $script:MaximalSentinelPacketSize = 31.9
+            if ($null -eq $jsonConfig.Advanced.MaximalSentinelPacketSizeMb) {
+                $script:MaximalSentinelPacketSizeMb = 31.9
             } 
             else {
-                if ($jsonConfig.Advanced.MaximalSentinelPacketSize -ge 32)
+                if ($jsonConfig.Advanced.MaximalSentinelPacketSizeMb -ge 32)
                 {
-                    Write-LogMessage -Message "Packet size $($jsonConfig.Advanced.MaximalSentinelPacketSize) greater than 31.9Kb. Maximum size for Sentinel is 31.9Kb."
-                    $script:MaximalSentinelPacketSize = 31.9
+                    Write-LogMessage -Message "Packet size $($jsonConfig.Advanced.MaximalSentinelPacketSizeMb) greater than 31.9Kb. Maximum size for Sentinel is 31.9Kb."
+                    $script:MaximalSentinelPacketSizeMb = 31.9
                 }
                 else
                 {
-                    [int] $Script:MaximalSentinelPacketSize = $jsonConfig.Advanced.MaximalSentinelPacketSize - 0.1
+                    [int] $Script:MaximalSentinelPacketSizeMb = $jsonConfig.Advanced.MaximalSentinelPacketSizeMb - 0.1
                 }
             }
 
@@ -2687,11 +2687,11 @@ foreach ($OutputName in $Script:Results.Keys)
         }
 
         $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
-        $contentDivision = [math]::Ceiling($ResultLength / ($Script:MaximalSentinelPacketSize *1024*1024))
+        $contentDivision = [math]::Ceiling($ResultLength / ($Script:MaximalSentinelPacketSizeMb *1024*1024))
 
         if ($contentDivision -le 1)
         {
-            Write-LogMessage -Message ("Upload payload size is less than $($Script:MaximalSentinelPacketSize)Mb. It will be sent in 1 segment")
+            Write-LogMessage -Message ("Upload payload size is less than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in 1 segment")
             # Submit the data to the API endpoint
             Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
             -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
@@ -2700,7 +2700,7 @@ foreach ($OutputName in $Script:Results.Keys)
         }
         else {
             
-            Write-LogMessage -Message ("Upload payload size is " + ($ResultLength/1024/1024).ToString("#.#") + "Mb, greater than $($Script:MaximalSentinelPacketSize)Mb. It will be sent in $contentDivision segments")
+            Write-LogMessage -Message ("Upload payload size is " + ($ResultLength/1024/1024).ToString("#.#") + "Mb, greater than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in $contentDivision segments")
 
             $maxCount = $script:Results[$OutputName].Count / $contentDivision
 
