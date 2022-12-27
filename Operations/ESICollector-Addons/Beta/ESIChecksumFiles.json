@@ -1,8 +1,8 @@
 {
     "UpdatedDate":  {
-                        "value":  "\/Date(1670603267550)\/",
+                        "value":  "\/Date(1672150694653)\/",
                         "DisplayHint":  2,
-                        "DateTime":  "Friday, December 9, 2022 5:27:47 PM"
+                        "DateTime":  "Tuesday, December 27, 2022 3:18:14 PM"
                     },
     "Files":  [
                   {
@@ -21,9 +21,9 @@
                       "ContentCheckSum":  "57E4827098C5900E831117375B8E7188C2E82752C49FD79EDB09A3D9D0762F1B"
                   },
                   {
-                      "FileName":  "ESICollector-ManagementRoles.json",
-                      "FileCheckSum":  "1247B879B590848347DFAC977E39658B29EF55EA8273DFC19225DE619164B0C6",
-                      "ContentCheckSum":  "F106802676C360A173CE94398D1DC4A712CC0E222D22FA7530C05D6B059145A6"
+                      "FileName":  "ESICollector-RoleAndGroupConfiguration.json",
+                      "FileCheckSum":  "FD792746CA3C97C1667C75A959DEF13641B10FC7E1625DCB9D91639A80C37055",
+                      "ContentCheckSum":  "A065B9584E7F961E62BD416214EC950E0ED21F0295D12BDD80FF4E9249B16C45"
                   },
                   {
                       "FileName":  "ESICollector-POPIMAPConfiguration.json",
@@ -36,9 +36,9 @@
                       "ContentCheckSum":  "2CF717CBCF5372A2B095C9E20D5F46F5AD0E66C8673FB61FFD463AD0BBD35A61"
                   },
                   {
-                      "FileName":  "ESICollector-RoleAndGroupConfiguration.json",
-                      "FileCheckSum":  "FD792746CA3C97C1667C75A959DEF13641B10FC7E1625DCB9D91639A80C37055",
-                      "ContentCheckSum":  "A065B9584E7F961E62BD416214EC950E0ED21F0295D12BDD80FF4E9249B16C45"
+                      "FileName":  "ESICollector-ManagementRoles.json",
+                      "FileCheckSum":  "134DAC751FB1361DCD1BA0462B19E2DCA4AF405911AB58D942B78FAA71D57E7C",
+                      "ContentCheckSum":  "DAE47917442C50427BAE3740AA5281488750A610C6FDEE2BE22464BA9C2495F4"
                   }
               ]
 }

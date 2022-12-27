@@ -17,7 +17,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"F106802676C360A173CE94398D1DC4A712CC0E222D22FA7530C05D6B059145A6"
+		"ContentCheckSum":"DAE47917442C50427BAE3740AA5281488750A610C6FDEE2BE22464BA9C2495F4"
 	},
     "AuditFunctions":[
         {
@@ -38,7 +38,7 @@
 		},
 		{
 			"Section":"MRCustomDetails",
-			"Cmdlet":"$result=@();$AllCustomMR=Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false };foreach ($CustomMR in $AllCustomMR) {$ParentRole = $CustomMR.Parent ; $result += Get-ManagementRoleEntry $CustomMR* | select Role,Name,Type,WhenCreated,WhenChanged,@{Name=\"Parameters\";Expression={[string]::join(\";\",($_.Parameters))}}, @{Name=\"ParentRole\";Expression={$ParentRole}} };$result",
+			"Cmdlet":"$result=@();$AllCustomMR=Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false };foreach ($CustomMR in $AllCustomMR) {$ParentRole = $CustomMR.Parent ; $result += Get-ManagementRoleEntry $CustomMR\\* | select Role,Name,Type,WhenCreated,WhenChanged,@{Name=\"Parameters\";Expression={[string]::join(\";\",($_.Parameters))}}, @{Name=\"ParentRole\";Expression={$ParentRole}} };$result",
 			"PropertySelection":["Role","Name","Type","WhenCreated","WhenChanged","Parameters"],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"All"
