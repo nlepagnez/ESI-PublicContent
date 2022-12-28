@@ -27,6 +27,9 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez
 
+    Version : 7.4.2 - Released : 28/12/2022 - nilepagn
+        - Implementation of ManagedIdentity for Exchange Online instead of RunAs Account using the new PS Module 3.0.0 of ExchangeOnline
+
     Version : 7.4.1 - Released : 28/12/2022 - nilepagn
         - Adding logs for Azure Upload
         - Enhancements on Group and user cache
@@ -134,7 +137,7 @@ Param (
     [switch] $GetVersion
 )
 
-$ESICollectorCurrentVersion = "7.4.1"
+$ESICollectorCurrentVersion = "7.4.2"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 #region CapabilitiesManagement
@@ -147,8 +150,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         if ($Global:isRunbook)
         {
-            $Session = Get-AutomationConnection -Name AzureRunAsConnection
-            Connect-ExchangeOnline -CertificateThumbprint $Session.CertificateThumbprint -AppId $Session.ApplicationID -ShowBanner:$false -Organization $TenantName
+            Connect-ExchangeOnline -ManagedIdentity -ShowBanner:$false -Organization $TenantName
         }
         else {
             Connect-ExchangeOnline

@@ -4,7 +4,7 @@
 
 ## Upgrade paths
 
-### From 7.3.2 to 7.4.1
+### From 7.3.2 to 7.4.2
 
 #### **Configuration File**
 
@@ -13,6 +13,8 @@ Parameters added in Advanced Section
 #### **ESI Collector Script**
 
 Replace the old script version with the new one. nothing to modifiy in the script.
+Attention, now ManagedIdentity is used for Exchange Online instead of RunAs Account.
+Assign rights to Managed Identity following Standard Procedure : [EXO for ManagedIdentity](https://learn.microsoft.com/en-us/powershell/exchange/connect-exo-powershell-managed-identity?view=exchange-ps#step-4-grant-the-exchangemanageasapp-api-permission-for-the-managed-identity-to-call-exchange-online)
 
 ### From 7.3.1 to 7.3.2
 
