@@ -1,4 +1,4 @@
-# Exchange Security Insights - Public Contents and Microsoft Sentinel Solution Readme page
+# Microsoft Exchange Security - Public Contents and Microsoft Sentinel Solution Readme page
 
 ## DATA Collection
 
@@ -11,6 +11,8 @@ To do that, we create the concept of "Option" with a mandatory root part that gi
 This part rely on the Exchange Security Insights On-Premises Collector for *On-Premises environments* and Exchange Security Insights Online Collector for *Online environments*.
 
 This root part collects Security configuration, RBAC Information and Mailbox Audit information to create the Security and RBAC Insights in Workbooks.
+
+[Exchange Security Insights On-Premises Collector](ESICollector.md)
 
 ### Option 1 - Exchange Admin Audits
 
