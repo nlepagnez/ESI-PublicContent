@@ -439,7 +439,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         }
         else {$AzureContext = Get-AzContext}
 
-        $AzureContext = Set-AzContext -SubscriptionName $AzureContext.Subscription -DefaultProfile $AzureContext
+        #$AzureContext = Set-AzContext -SubscriptionName $AzureContext.Subscription -DefaultProfile $AzureContext
         $context = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile.DefaultContext
 
         $ModuleGraphToken = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate($context.Account, $context.Environment, $context.Tenant.Id.ToString(), $null, [Microsoft.Azure.Commands.Common.Authentication.ShowDialog]::Never, $null, "https://graph.microsoft.com")
@@ -2380,11 +2380,11 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         try {
             if ($Useproxy)
             {
-                WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing -Proxy $Script:ProxyUrl
+                $WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing -Proxy $Script:ProxyUrl
             }
             else
             {
-                WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing 
+                $WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing 
             }
         }   
         catch {
