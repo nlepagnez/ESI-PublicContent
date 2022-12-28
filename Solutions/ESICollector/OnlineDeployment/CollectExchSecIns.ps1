@@ -26,6 +26,18 @@ possibility of such damages
     The output a csv file of collected data
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez
+
+    Version : 7.4.1 - Released : 28/12/2022 - nilepagn
+        - Adding logs for Azure Upload
+        - Enhancements on Group and user cache
+        - Allow to force specific functions to be excluded from parallelism.
+
+    Version : 7.4 - Released : NOT RELEASED - nilepagn
+        - Complete Get-Group when Get-ADGroupMember not available
+        - Get-ESIADGroupMember for external usage that can use Get-ADGroupMember or Get-ADGroup
+        - Avoid Loop in GetInfo with members of groups.
+        - Add a Group cache to avoid to many retreival
+
     Version : 7.3.2 - Released : 09/12/2022 - nilepagn
         - Correct a bug when Without Internet and using Folder Add-ons
         - Parametize the Max packet size sent to Sentinel
@@ -122,7 +134,7 @@ Param (
     [switch] $GetVersion
 )
 
-$ESICollectorCurrentVersion = "7.3.2.1"
+$ESICollectorCurrentVersion = "7.4.1"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 #region CapabilitiesManagement
@@ -817,7 +829,8 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             [Parameter(Mandatory=$False)] [String] $OutputStream = "Default",
             [Parameter(Mandatory=$False)] [String] $TransformationFunction = $null,
             [Parameter(Mandatory=$False)] [Switch] $TransformationForeach,
-            [Parameter(Mandatory=$False)] [Switch] $ProcessPerServer
+            [Parameter(Mandatory=$False)] [Switch] $ProcessPerServer,
+            [Parameter(Mandatory=$False)] [Switch] $Norunspace
         )
 
         $Object = New-Object PSObject
@@ -828,6 +841,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $Object | Add-Member Noteproperty -Name TransformationFunction -value $TransformationFunction
         $Object | Add-Member Noteproperty -Name TransformationForeach -value $TransformationForeach
         $Object | Add-Member Noteproperty -Name ProcessPerServer -value $ProcessPerServer
+        $Object | Add-Member Noteproperty -Name Norunspace -value $Norunspace
         
         return $Object
     }
@@ -957,7 +971,14 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             foreach ($Entry in $CmdletResult)
             {
                 $inc++
+
+                $NamedEntry = $null
+                if ($null -ne $Entry.Name) { $NamedEntry = $Entry.Name}
+                elseif ($null -ne $Entry.Identity) { $NamedEntry = $Entry.Identity}
+                elseif ($null -ne $Entry.MemberPath) { $NamedEntry = $Entry.MemberPath}
+
                 Write-LogMessage -Message ("`t`t Generate result $inc/$($CmdletResult.count) ...")  -NoOutput
+                Write-LogMessage -Message ("`t`t`t Result : ($NamedEntry) ... ") -NoOutput
                 $Object = New-Object PSObject
                 $Object | Add-Member Noteproperty -Name GenerationInstanceID -value $ScriptInstanceID
                 $Object | Add-Member Noteproperty -Name ESIEnvironment -value $Script:ESIEnvironmentIdentification
@@ -1258,7 +1279,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             }
 
             if ($null -ne $Execution) {
-                Write-LogMessage -Message ("`t`t Generate Result ...") -NoOutput
+                Write-LogMessage -Message ("`t`t Generate Result (Parallel) ... ") -NoOutput
                 $Object = New-Result -Section $Section -PSCmdL $PSCmdL -CmdletResult $Execution -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
             }
             else {
@@ -1483,18 +1504,68 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
     }
 
     #Retrieve group member
+
+    function Get-ESIADGroupMember
+    {
+        Param (
+            $Identity,
+            $Server
+        )
+
+        return (GetMember -TargetName $Identity -dnsrvobj $Server)
+    }
+
     Function GetMember
     {
         Param (
             $TargetObject,
+            $TargetName,
             $dnsrvobj
         )
 
-        try {
-            $list = Get-ADGroupMember $TargetObject.SamAccountName -server $dnsrvobj
+        if (-not [String]::IsNullOrEmpty($TargetName))
+        {
+            $TargetSamAccountName = $TargetName
         }
-        catch {
-            $list = (Get-ADGroup $TargetObject.SamAccountName -server $dnsrvobj).Members
+        else {
+            $TargetSamAccountName = $TargetObject.SamAccountName 
+        }
+
+        $DN=[string]$TargetObject
+        if ($script:GGroupArray.keys -notcontains $DN)
+        {
+            try {
+                $list = Get-ADGroupMember $TargetSamAccountName -server $dnsrvobj
+            }
+            catch {
+                Write-LogMessage -Message "Impossible to retreive member using Get-ADGroupMember for $TargetSamAccountName" -NoOutput -Level Warning
+                if ($dnsrvobj -notcontains "3268" -and $dnsrvobj -notcontains "3269")
+                {
+                    $gctarget = $dnsrvobj + ":3268"
+                }
+                else { $gctarget = $dnsrvobj }
+                
+                $Templist = (Get-ADGroup $TargetSamAccountName -server $dnsrvobj).Members
+                $list = @()
+                foreach ($obj in $TempList)
+                {
+                    try {
+                        $list += Get-ADObject $obj -Server $gctarget
+                    }
+                    catch {
+                        Write-LogMessage -Message "Impossible to get Object Info on $gctarget for $obj" -NoOutput -Level Warning
+                
+                        $list += [PSCustomObject]@{
+                            Name = $obj
+                            DistinguishedName = $obj
+                        }
+                    }
+                }
+            }
+            $script:GGroupArray[$DN]=$list
+        }
+        else {
+            $list = $script:GGroupArray[$DN]
         }
 
         return $List
@@ -1521,7 +1592,9 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         Param (
             $ObjectInput,
             $Level = $null,
-            $parentgroup
+            $parentgroup,
+            $DirectParentDN,
+            [switch] $loop
         )
 
         if ($null -ne $level)
@@ -1541,17 +1614,39 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         #Call Function to create member path parameter
         $InfoResult = GetDetails -TargetObject $ObjectInput -Level $Level -Parentgroup $parentgroup
         $InfoTable += $InfoResult
-        if ($ObjectInput.ObjectClass -like "Group")
+
+        if ($loop)
+        {
+            Write-LogMessage -Message "`t`t Loop detected between $DirectParentDN and $($ObjectInput.DistinguishedName)" -Level Warning -NoOutput
+            $InfoResult.MemberPath +=  " - LOOP DETECTED"
+        }
+
+        if ($ObjectInput.ObjectClass -like "Group" -and -not $loop)
         {
             #Call Function to retrieve group content
             $dnsrv= (($ObjectInput.DistinguishedName).Substring(($ObjectInput.DistinguishedName).IndexOf("DC=")) -replace ",DC=","." -replace "DC=")
             $list = GetMember -TargetObject $ObjectInput -dnsrvobj $dnsrv
             $InfoResult.Members = $list
-            foreach ($member in $list)
+            if ($level -gt 50)
             {
-                $ResultTable = GetInfo -ObjectInput $member -Level $Level -Parentgroup $parentgroup
-                $ResultTable = GenerateMembersDetail -ResultTable $ResultTable -Name $ObjectInput.Name -ParentgroupI $parentgroup
-                $InfoTable += $ResultTable
+                Write-LogMessage -Message "`t`t LEVEL 50, Possible Loop between groups." -Level Warning -NoOutput
+                $InfoResult.MemberPath +=  " - Possible Loop on groups"
+            }
+            else {
+                foreach ($member in $list)
+                {
+                    if ($member.DistinguishedName -like $DirectParentDN)
+                    {
+                        $ResultTable = GetInfo -ObjectInput $member -Level $Level -Parentgroup $parentgroup -DirectParentDN $ObjectInput.DistinguishedName -loop
+                        $ResultTable = GenerateMembersDetail -ResultTable $ResultTable -Name $ObjectInput.Name
+                        $InfoTable += $ResultTable
+                    }
+                    else {
+                        $ResultTable = GetInfo -ObjectInput $member -Level $Level -Parentgroup $parentgroup -DirectParentDN $ObjectInput.DistinguishedName
+                        $ResultTable = GenerateMembersDetail -ResultTable $ResultTable -Name $ObjectInput.Name
+                        $InfoTable += $ResultTable
+                    }
+                }
             }
         }
 
@@ -1560,10 +1655,11 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             #Call Function to retrieve group content
             $dnsrv= $ObjectInput.RoleAssignee.DomainId
             $AssigneeObject = Get-ADObject $ObjectInput.RoleAssignee.DistinguishedName -Server $dnsrv -Properties SAMAccountName
-            $ResultTable = GetInfo -ObjectInput $AssigneeObject -Level $Level -Parentgroup $ObjectInput.Name
+            $ResultTable = GetInfo -ObjectInput $AssigneeObject -Level $Level -Parentgroup $ObjectInput.Name -DirectParentDN $ObjectInput.DistinguishedName
             $ResultTable = GenerateMembersDetail -ResultTable $ResultTable -Name $ObjectInput.Name -ParentgroupI $parentgroup
             $InfoTable += $ResultTable
         }
+
         return $InfoTable
     }
 
@@ -1670,21 +1766,6 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $MyObject | Add-Member -MemberType NoteProperty -Name "DN" -Value $null
         }
         return $MyObject
-    }
-
-    #Create the MemberPath value
-    Function GenerateMembersDetail
-    {
-        Param (
-            $ResultTable,
-            $Name
-        )
-
-        foreach ($Result in $ResultTable)
-        {
-            $Result.MemberPath = $Name + "\" + $Result.MemberPath
-        }
-        return $ResultTable
     }
 
     #Call Function to retrieve group member and user spceific information and Function to create the MemberPath
@@ -2516,10 +2597,12 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 }
             }
 
+            if ([string]::IsNullOrEmpty($AuditFunction.NoRunspace)) {$NoRunspace = $false } else { $NoRunspace = [Convert]::ToBoolean($AuditFunction.NoRunspace)}
+
             if ([string]::IsNullOrEmpty($AuditFunction.OutputStream)) {$TargetOutputStream = "Default"}
             else {$TargetOutputStream = $AuditFunction.OutputStream}
 
-            $FunctionListFromConfig += New-Entry -Section $AuditFunction.Section -PSCmdL $TargetCmdlet -Select $TargetSelect -TransformationFunction $AuditFunction.TransformationFunction -ProcessPerServer:$TargetProcessPerServer  -TransformationForeach:$TransformationForeach -OutputStream $TargetOutputStream
+            $FunctionListFromConfig += New-Entry -Section $AuditFunction.Section -PSCmdL $TargetCmdlet -Select $TargetSelect -TransformationFunction $AuditFunction.TransformationFunction -ProcessPerServer:$TargetProcessPerServer  -TransformationForeach:$TransformationForeach -OutputStream $TargetOutputStream -Norunspace:$NoRunspace
         }
 
         return $FunctionListFromConfig
@@ -2536,6 +2619,7 @@ $Global:InstanceName = $InstanceName
 $Script:Runspaces = @{}
 $script:ht_domains = @{}
 $script:GUserArray=@{}
+$script:GGroupArray=@{}
 $Script:Results = @{}
 $Script:Results["Default"] = @()
 
@@ -2626,7 +2710,7 @@ foreach ($Entry in $FunctionList)
 
         foreach ($ExchangeServer in $script:ExchangeServerList.ListSRVUp)
         {
-            if ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) {
+            if (($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) -and $Entry.NoRunpace -eq $false) {
                 processParallel -Entry $Entry -TargetServer $ExchangeServer
             }
             else {
@@ -2636,7 +2720,7 @@ foreach ($Entry in $FunctionList)
     }
     else
     {
-        if ($Script:GlobalParallelProcess) {
+        if ($Script:GlobalParallelProcess -and $Entry.NoRunpace -eq $false) {
             processParallel -Entry $Entry
         }
         else {
@@ -2702,14 +2786,14 @@ foreach ($OutputName in $Script:Results.Keys)
             
             Write-LogMessage -Message ("Upload payload size is " + ($ResultLength/1024/1024).ToString("#.#") + "Mb, greater than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in $contentDivision segments")
 
-            $maxCount = $script:Results[$OutputName].Count / $contentDivision
+            $maxCount = [math]::Floor($script:Results[$OutputName].Count / $contentDivision)
 
             $maxSegmentCount = $maxCount
             $CounterStart = 0
             $exitNextTime = $false
             while ($exitNextTime -eq $false)
             {
-                if ($maxSegmentCount -gt $script:Results[$OutputName].Count)
+                if ($maxSegmentCount -ge $script:Results[$OutputName].Count)
                 {
                     $maxSegmentCount = $script:Results[$OutputName].Count
                     $exitNextTime = $true
@@ -2728,11 +2812,19 @@ foreach ($OutputName in $Script:Results.Keys)
 
                 $ResultInjsonFormat = $TempTable | ConvertTo-Json -Compress
 
-                # Submit the data to the API endpoint
-                Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
-                -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
-                -body ([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat)) `
-                -logType $OutputSentinelAPI
+                Write-LogMessage -Message ("Sending payload : $ResultInjsonFormat")
+
+                try {
+                    # Submit the data to the API endpoint
+                    Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
+                    -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
+                    -body ([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat)) `
+                    -logType $OutputSentinelAPI
+                }
+                catch {
+                    Write-LogMessage -Message ("Error sending to Sentinel. $_") -Level Error
+                }
+                
             }
         }
         

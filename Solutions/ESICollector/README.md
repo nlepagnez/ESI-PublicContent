@@ -4,11 +4,21 @@
 
 ## Upgrade paths
 
+### From 7.3.2 to 7.4.1
+
+#### **Configuration File**
+
+Parameters added in Advanced Section
+
+#### **ESI Collector Script**
+
+Replace the old script version with the new one. nothing to modifiy in the script.
+
 ### From 7.3.1 to 7.3.2
 
 #### **Configuration File**
 
-Parameters added in Advance Section
+Parameters added in Advanced Section
 
 #### **ESI Collector Script**
 
