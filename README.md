@@ -18,7 +18,7 @@ This part rely on the Exchange Security Insights On-Premises Collector for *On-P
 
 This root part collects Security configuration, RBAC Information and Mailbox Audit information to create the Security and RBAC Insights in Workbooks.
 
-[Exchange Security Insights On-Premises Collector](ESICollector.md)
+[Exchange Security Insights On-Premise/Online Collector](ESICollector.md)
 
 ### Option 1 - Exchange Admin Audits
 
