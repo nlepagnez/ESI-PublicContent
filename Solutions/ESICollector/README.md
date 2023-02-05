@@ -6,11 +6,11 @@ You can refer to the Exchange Securitty Insight Collector [here](https://github.
 
 ## Upgrade paths
 
-### From 7.3.2 to 7.4.2
+### From 7.4.2 to 7.5.0
 
 #### **Configuration File**
 
-Parameters added in Advanced Section
+Nothing changed
 
 #### **ESI Collector Script**
 
