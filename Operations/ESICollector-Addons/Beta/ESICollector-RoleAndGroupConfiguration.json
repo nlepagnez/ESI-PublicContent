@@ -17,7 +17,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"A065B9584E7F961E62BD416214EC950E0ED21F0295D12BDD80FF4E9249B16C45"
+		"ContentCheckSum":"0886F9EE79ED5D20F3D443A623425CE29722FED0953BEB296D2CF6212918705A"
 	},
     "AuditFunctions":[
         {
@@ -87,7 +87,20 @@
 			"ProcessPerServer":"false",
 			"TransformationFunction":"GetInfo",
 			"TransformationForeach":"True",
-			"ProcessingCategory":"All"
+			"ProcessingCategory":"On-Premises"
+		},
+		{
+			"Section":"DirectRoleAssignments",
+			"Cmdlet":"Get-ManagementRoleAssignment | where {$_.RoleAssigneeType -in (\"SecurityGroup\",\"User\")} | select *, @{Name=\"ObjectClass\";Expression={\"ManagementRoleAssignment\"}} -ExcludeProperty ObjectClass",
+			"PropertySelection":["*"],
+			"CustomExpressionForSelection":[
+				{"Name":"LastLogonString","Expression":"$_.LastLogon.ToString()"},
+				{"Name":"LastPwdSetString","Expression":"$_.LastPwdSet.ToString()"}
+			],
+			"ProcessPerServer":"false",
+			"TransformationFunction":"GetO365Info",
+			"TransformationForeach":"True",
+			"ProcessingCategory":"Online"
 		},
 		{
 			"Section":"LocalAminGroup",

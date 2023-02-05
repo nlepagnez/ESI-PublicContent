@@ -1,8 +1,21 @@
 # **Exchange Security Insight Collector Download**
 
-## Actual Version : 7.3.2
+You can refer to the Exchange Securitty Insight Collector [here](https://github.com/nlepagnez/ESI-PublicContent/blob/main/ESICollector.md)
+
+## Actual Version : 7.5.0
 
 ## Upgrade paths
+
+### From 7.3.2 to 7.4.2
+
+#### **Configuration File**
+
+Parameters added in Advanced Section
+
+#### **ESI Collector Script**
+
+Replace the old script version with the new one. nothing to modifiy in the script.
+
 
 ### From 7.3.2 to 7.4.2
 

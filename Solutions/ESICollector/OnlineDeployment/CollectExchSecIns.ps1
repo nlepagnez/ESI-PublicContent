@@ -27,6 +27,10 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez
 
+    Version : 7.5.0 - Released : 05/02/2023 - nilepagn
+        - Correct a bug excluding tests with Processing Type "Online" on a Runbook execution.
+        - Limit size of Members of a group to 25Kb when saved inline with the Group information. Entire member list can be retrieved using the memberpath.
+
     Version : 7.4.2 - Released : 28/12/2022 - nilepagn
         - Implementation of ManagedIdentity for Exchange Online instead of RunAs Account using the new PS Module 3.0.0 of ExchangeOnline
 
@@ -137,7 +141,7 @@ Param (
     [switch] $GetVersion
 )
 
-$ESICollectorCurrentVersion = "7.4.2"
+$ESICollectorCurrentVersion = "7.5.0"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 #region CapabilitiesManagement
@@ -1628,7 +1632,20 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             #Call Function to retrieve group content
             $dnsrv= (($ObjectInput.DistinguishedName).Substring(($ObjectInput.DistinguishedName).IndexOf("DC=")) -replace ",DC=","." -replace "DC=")
             $list = GetMember -TargetObject $ObjectInput -dnsrvobj $dnsrv
-            $InfoResult.Members = $list
+
+            Write-LogMessage -Message "`t`t Verify Members list size less than $($Script:MaximalSentinelFieldMemberListSizeKb)-5" -Level Verbose -NoOutput
+            $ResultInjsonFormat = $list | ConvertTo-Json -Compress
+            $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
+
+            $contentDivision = [math]::Ceiling($ResultLength / (($Script:MaximalSentinelFieldMemberListSizeKb - 5) *1024))
+
+            if ($contentDivision -le 1) { $InfoResult.Members = $list }
+            else 
+            { 
+                $InfoResult.Members = "TOO Many Members for tracking them in Log Analytics member field. 30Kb. Find members by MemberPath" 
+                Write-LogMessage -Message "`t`t TOO Many Members for tracking them in Log Analytics member field. Size : $ResultLength - Content Division : $contentDivision" -Level Warning -NoOutput
+            }
+
             if ($level -gt 50)
             {
                 Write-LogMessage -Message "`t`t LEVEL 50, Possible Loop between groups." -Level Warning -NoOutput
@@ -1689,7 +1706,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                         $User = Get-MgUser -UserId $TargetObject.Id -Property AccountEnabled,UserPrincipalName, LastPasswordChangeDateTime, Mail, MailNickname, OnPremisesDistinguishedName, OnPremisesSamAccountName, PasswordPolicies, PasswordProfile, UserType, SignInActivity
                     }
                     catch {
-                        Write-LogMessage -Message "Impossible to retrive user $($TargetObject.Id)" -NoOutput -Level Warning
+                        Write-LogMessage -Message "Impossible to retreive user $($TargetObject.Id)" -NoOutput -Level Warning
                     }
 					
 					$UserExchangeInfo = Get-Recipient $User.UserPrincipalName
@@ -1799,7 +1816,20 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         {
             #Call Function to retrieve group content
             $list = Get-MgGroupMember -GroupId $ObjectInput.Id
-            $InfoResult.Members = $list
+
+            Write-LogMessage -Message "`t`t Verify Members list size less than $($Script:MaximalSentinelFieldMemberListSizeKb)-5" -Level Verbose -NoOutput
+            $ResultInjsonFormat = $list | ConvertTo-Json -Compress
+            $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
+
+            $contentDivision = [math]::Ceiling($ResultLength / (($Script:MaximalSentinelFieldMemberListSizeKb - 5) *1024))
+
+            if ($contentDivision -le 1) { $InfoResult.Members = $list }
+            else 
+            { 
+                $InfoResult.Members = "TOO Many Members for tracking them in Log Analytics member field. 30Kb. Find members by MemberPath" 
+                Write-LogMessage -Message "`t`t TOO Many Members for tracking them in Log Analytics member field. Size : $ResultLength - Content Division : $contentDivision" -Level Warning -NoOutput
+            }
+
             foreach ($member in $list)
             {
                 $ResultTable = GetO365Info -ObjectInput $member -Level $Level -Parentgroup $parentgroup
@@ -1894,7 +1924,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                     $TheObject2 = new-Object PSCustomObject
                     $TheObject2 | Add-Member -MemberType NoteProperty -Name "Parentgroup" -Value "$srv\Local Administrators"
                     $TheObject2 | Add-Member -MemberType NoteProperty -Name "Level" -Value 1
-                    $TheObject2 | Add-Member -MemberType NoteProperty -Name "ObjectClass" -Value "User"
+                    $TheObject2 | Add-Member -MemberType NoteProperty -Name "ObjectClass" -Value "user"
                     $TheObject2 | Add-Member -MemberType NoteProperty -Name "MemberPath" -Value ($entry.split(";"))[1]
                     $TheObject2 | Add-Member -MemberType NoteProperty -Name "Members" -Value $null
                     $TheObject2 | Add-Member -MemberType NoteProperty -Name "LastLogon" -Value $script:GUserArray[$DN].ULastLogonDate
@@ -2448,7 +2478,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         }
 
         # Call LoadFunction
-        return LoadAuditFunctions -AuditFunctionList $AuditFunctionList
+        return LoadAuditFunctions -AuditFunctionList $AuditFunctionList -ProcessingType "Online"
     }
 
     function LoadAuditFunctions
@@ -2618,6 +2648,7 @@ $DateSuffixForFile = Get-Date -Format "yyyy-MM-dd-HH-mm-ss"
 $DateSuffix = Get-Date -Format "yyyy-MM-dd HH:mm:ss K"
 $Global:isRunbook = !($null -eq (Get-Command "Get-AutomationVariable" -ErrorAction SilentlyContinue))
 $Global:InstanceName = $InstanceName
+$Script:MaximalSentinelFieldMemberListSizeKb = 20
 $Script:Runspaces = @{}
 $script:ht_domains = @{}
 $script:GUserArray=@{}
