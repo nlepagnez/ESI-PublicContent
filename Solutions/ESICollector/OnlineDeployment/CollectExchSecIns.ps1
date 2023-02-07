@@ -1634,10 +1634,15 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $list = GetMember -TargetObject $ObjectInput -dnsrvobj $dnsrv
 
             Write-LogMessage -Message "`t`t Verify Members list size less than $($Script:MaximalSentinelFieldMemberListSizeKb)-5" -Level Verbose -NoOutput
-            $ResultInjsonFormat = $list | ConvertTo-Json -Compress
-            $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
-
-            $contentDivision = [math]::Ceiling($ResultLength / (($Script:MaximalSentinelFieldMemberListSizeKb - 5) *1024))
+            
+            if ($null -ne $list)
+            {
+                $ResultInjsonFormat = $list | ConvertTo-Json -Compress
+                $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
+                
+                $contentDivision = [math]::Ceiling($ResultLength / (($Script:MaximalSentinelFieldMemberListSizeKb - 5) *1024))
+            }
+            else { $contentDivision = 1 }
 
             if ($contentDivision -le 1) { $InfoResult.Members = $list }
             else 
