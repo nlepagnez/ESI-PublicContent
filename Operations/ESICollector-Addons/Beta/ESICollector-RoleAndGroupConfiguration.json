@@ -1,10 +1,14 @@
 {
     "SolutionMetadata":
 	{
-		"JSonVersion":"1.0",
-		"JsonUpdateDate":"27/09/2022",
+		"JSonVersion":"1.2",
+		"JsonUpdateDate":"27/02/2023",
 		"Description":"All Audit Functions around Role and Groups content and configuration",
 		"VersionInformation":{
+			"1.2":{
+				"Tracking":["Adding Exchange Enterprise Servers and Exchange Services on ADGroup"],
+				"MigrationMessageFromLastVersion":"Change list of groups that ADGroup retrieve"
+			},
 			"1.1":{
 				"Tracking":["We remove Role information in RoleGroup section to optimize data payload. We add a new section RoleGroupMember"],
 				"MigrationMessageFromLastVersion":"Change 'RoleGroup' section with new version. Add 'RoleGroupMember' section"
@@ -65,7 +69,7 @@
 		},
 		{
 			"Section":"ADGroup",
-			"Cmdlet":"@( \"S-1-5-32-544\", \"S-1-5-32-548\",\"#SIDRoot#-512\",\"#SIDRoot#-518\",\"#SIDRoot#-519\") | %{ Get-ADgroup -identity $_ -server #GCServer# }",
+			"Cmdlet":"@( \"S-1-5-32-544\", \"S-1-5-32-548\",\"#SIDRoot#-512\",\"#SIDRoot#-518\",\"#SIDRoot#-519\", \"Exchange Enterprise Servers\",\"Exchange Services\") | %{ Get-ADgroup -identity $_ -server #GCServer# }",
 			"PropertySelection":["*"],
 			"CustomExpressionForSelection":[
 				{"Name":"LastLogonString","Expression":"$_.LastLogon.ToString()"},
