@@ -1,8 +1,8 @@
 {
     "UpdatedDate":  {
-                        "value":  "\/Date(1675618963589)\/",
+                        "value":  "\/Date(1677518494768)\/",
                         "DisplayHint":  2,
-                        "DateTime":  "Sunday, February 5, 2023 6:42:43 PM"
+                        "DateTime":  "Monday, February 27, 2023 6:21:34 PM"
                     },
     "Files":  [
                   {
@@ -22,8 +22,8 @@
                   },
                   {
                       "FileName":  "ESICollector-ManagementRoles.json",
-                      "FileCheckSum":  "134DAC751FB1361DCD1BA0462B19E2DCA4AF405911AB58D942B78FAA71D57E7C",
-                      "ContentCheckSum":  "DAE47917442C50427BAE3740AA5281488750A610C6FDEE2BE22464BA9C2495F4"
+                      "FileCheckSum":  "052A020BD7A382E1492406472ECD1B18F1E36241BC2E4A3DC5D579D3DC26F2C0",
+                      "ContentCheckSum":  "099D468E94891F8C74CE266C7712C66B9827D6F45804653413F6D56849F2C710"
                   },
                   {
                       "FileName":  "ESICollector-POPIMAPConfiguration.json",
@@ -37,8 +37,8 @@
                   },
                   {
                       "FileName":  "ESICollector-RoleAndGroupConfiguration.json",
-                      "FileCheckSum":  "6B62481C21F64AE8C74DEBE96424CE2F6EBD4DAA9576D92C170A2BC0B549B741",
-                      "ContentCheckSum":  "0886F9EE79ED5D20F3D443A623425CE29722FED0953BEB296D2CF6212918705A"
+                      "FileCheckSum":  "6954F692172367521FB85008C959793627F5190565570563901AB9CA77AAE6AF",
+                      "ContentCheckSum":  "1E5B0829DB06EC79E49127FA0FA7E42725FE2504F42D0A14620F9B3555E7F179"
                   }
               ]
 }
