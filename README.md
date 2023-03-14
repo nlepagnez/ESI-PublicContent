@@ -20,7 +20,32 @@ This root part collects Security configuration, RBAC Information and Mailbox Aud
 
 [Exchange Security Insights On-Premise/Online Collector](ESICollector.md)
 
+![List of options](https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/MicrosoftExchangeSecurityDataConnectorsOptions.png)
+
 ### Option 1 - Exchange Admin Audits
 
 This option collects MS Exchange logs (retrieved from the Event Viewer) for every Exchange servers using Azure Monitor Agent or Azure Log Analytics agent on each Exchange Server. This content is used to analyze Admin activities on your On-Premises Exchange environment(s)
 
+### Option 2
+
+Security/Application/System logs from all Exchange servers
+
+### Option 3
+
+Security logs for DC located in Exchange AD site
+
+### Option 4
+
+Security logs for all DC
+
+### Option 5
+
+IIS logs for all Exchange servers
+
+### Option 6
+
+Message Tracking logs for all Exchange servers
+
+### Option 7
+
+HTTPProxy logs for all Exchange Servers
