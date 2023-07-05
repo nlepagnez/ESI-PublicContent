@@ -1,0 +1,33 @@
+{
+    "LatestVersion":"7.5.0.0",
+    "LatestVersionDate":"2023-02-07T00:00:00.000Z",
+    "LatestVersionDownload":"https://aka.ms/ESI-ExchangeCollector-RawScript",
+    "ESICollectorRawRepository":"https://github.com/nlepagnez/ESI-PublicContent/raw/main/Solutions/ESICollector/",
+    "VersionHistory":{
+		"7.5.0.0":{
+            "VersionFileName":"CollectExchSecIns-v7.5.0.0.zip",
+            "BreakingChanges":[]
+        },
+        "7.4.2.0":{
+            "VersionFileName":"CollectExchSecIns-v7.4.2.0.zip",
+            "BreakingChanges":[
+                {
+                    "Description":"The script now uses the new Exchange Online V2 module. You need to install it before running the script. See https://github.com/nlepagnez/ESI-PublicContent/tree/main/Solutions/ESICollector#from-732-to-742 for more information.",
+                    "Target":"Online"
+                }
+            ]
+        },
+        "7.3.2.1":{
+            "VersionFileName":"CollectExchSecIns-v7.3.2.1.zip",
+            "BreakingChanges":[]
+        },
+        "7.3.1.0":{
+            "VersionFileName":"CollectExchSecIns-v7.3.1.0.zip",
+            "BreakingChanges":[]
+        },
+        "7.3.0.0":{
+            "VersionFileName":"CollectExchSecIns-v7.5.0.0.zip",
+            "BreakingChanges":[]
+        }
+	}
+}
