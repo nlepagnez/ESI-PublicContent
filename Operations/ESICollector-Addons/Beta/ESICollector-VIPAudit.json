@@ -28,7 +28,7 @@
 			],
 			"ProcessPerServer":"false",
 			"OutputStream":"VIPMailboxAuditLog",
-			"ProcessingCategory":"All"
+			"ProcessingCategory":"On-Premises"
 		}
     ]
 }
