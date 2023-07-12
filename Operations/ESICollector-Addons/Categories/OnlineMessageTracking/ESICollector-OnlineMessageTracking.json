@@ -13,12 +13,12 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"D11A9A24C41B62323A97D99B553A7012C15FD35A724B90C0A18D305626DD24AC"
+		"ContentCheckSum":"A7068A39A4647CB33704038F09B4D8C71DB39C4C32632710C539C245577F65AF"
 	},
     "AuditFunctions":[
 		{
 			"Section":"OnlineMessageTracking",
-			"Cmdlet":"Get-MessageTrace -StartDate \"#LastDateTracking#\" -EndDate (Get-Date)",
+			"Cmdlet":"Get-MessageTrace -StartDate \"#LastDateOfSection#\" -EndDate \"#ScriptLaunchedDate#\"",
 			"PropertySelection":["*"],
 			"CustomExpressionForSelection":[],
 			"ProcessPerServer":"false",
@@ -26,7 +26,7 @@
 			"PaginationInformation":{
 				"PaginationActivated":"true",
 				"PageSize":5000,
-				"MaxPage":1,
+				"MaxPage":2000,
 				"PartialDataUpload":"true",
 				"StorePagesInMemory":"true"
 			},
@@ -39,7 +39,7 @@
 		},
 		{
 			"Section":"OnlineDetailedMessageTracking",
-			"Cmdlet":"$MailList = Get-MessageTrace -StartDate \"#LastDateTracking#\" -EndDate (Get-Date) #Pagination# ; foreach ($mail in $MailList){Get-MessageTraceDetail -MessageTraceId $mail.MessageTraceId -MessageId $mail.MessageId -RecipientAddress $mail.RecipientAddress }",
+			"Cmdlet":"$MailList = Get-MessageTrace -StartDate \"#LastDateTracking#\" -EndDate \"#ScriptLaunchedDate#\" #Pagination# ; foreach ($mail in $MailList){Get-MessageTraceDetail -MessageTraceId $mail.MessageTraceId -MessageId $mail.MessageId -RecipientAddress $mail.RecipientAddress }",
 			"PropertySelection":["*"],
 			"CustomExpressionForSelection":[],
 			"ProcessPerServer":"false",
@@ -47,7 +47,7 @@
 			"PaginationInformation":{
 				"PaginationActivated":"true",
 				"PageSize":5000,
-				"MaxPage":1,
+				"MaxPage":2000,
 				"PartialDataUpload":"true",
 				"StorePagesInMemory":"true"
 			},

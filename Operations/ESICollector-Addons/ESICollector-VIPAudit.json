@@ -13,12 +13,12 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"2CF717CBCF5372A2B095C9E20D5F46F5AD0E66C8673FB61FFD463AD0BBD35A61"
+		"ContentCheckSum":"042F7C5A2AD5631B3403B3222E274A1C3D76928A3B997F2BD4CCA11AB7EFD09B"
 	},
     "AuditFunctions":[
         {
 			"Section":"MAL",
-			"Cmdlet":"'$Userlist = get-mailbox | ? { $_.AuditEnabled -eq $true} ; foreach ($user in $Userlist){Search-MailboxAuditLog -Identity $user -LogonTypes delegate,owner,admin -ShowDetails -StartDate \"#LastDateTracking#\" }'",
+			"Cmdlet":"$Userlist = get-mailbox | ? { $_.AuditEnabled -eq $true} ; foreach ($user in $Userlist){Search-MailboxAuditLog -Identity $user -LogonTypes delegate,owner,admin -ShowDetails -StartDate \"#LastDateTracking#\" }",
 			"PropertySelection":["LastAccessed","MailboxOwnerUPN","MailboxResolvedOwnerName","LogonUserDisplayName ","LogonType","Operation","FolderPathName","ClientInfoString","ClientIPAddress","InternalLogonType","ItemID","ItemSubject","ItemAttachments","SourceItemIdsList","SourceItemSubjectsList","SourceItemAttachmentsList","SourceItemFolderPathNamesList","SourceFolderPathNamesList","OperationResult"],
 			"CustomExpressionForSelection":[
 				{"Name":"LastAccessedString","Expression":"$_.LastAccessed.ToString()"},
@@ -27,7 +27,7 @@
 				
 			],
 			"ProcessPerServer":"false",
-			"OutputStream":"VIPMailboxAuditLog.csv",
+			"OutputStream":"VIPMailboxAuditLog",
 			"ProcessingCategory":"All"
 		}
     ]

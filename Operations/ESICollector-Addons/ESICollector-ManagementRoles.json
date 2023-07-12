@@ -1,10 +1,14 @@
 {
     "SolutionMetadata":
 	{
-		"JSonVersion":"1.0",
-		"JsonUpdateDate":"27/09/2022",
+		"JSonVersion":"1.2",
+		"JsonUpdateDate":"27/02/2023",
 		"Description":"All Audit Functions around Management Roles",
 		"VersionInformation":{
+			"1.2":{
+				"Tracking":["Changing Properties of 'MRA'. Changing to *"],
+				"MigrationMessageFromLastVersion":"Replacing MRA Properties to *"
+			},
 			"1.1":{
 				"Tracking":["Changing Properties of 'MRCustom'. Changing how to retrieve MRCustomDetails"],
 				"MigrationMessageFromLastVersion":"Replacing MRCustom and MRCustomDetails segments"
@@ -17,13 +21,13 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"DAE47917442C50427BAE3740AA5281488750A610C6FDEE2BE22464BA9C2495F4"
+		"ContentCheckSum":"099D468E94891F8C74CE266C7712C66B9827D6F45804653413F6D56849F2C710"
 	},
     "AuditFunctions":[
         {
 			"Section":"MRA",
 			"Cmdlet":"Get-ManagementRoleAssignment",
-			"PropertySelection":["Name","Role","RoleAssigneeName","EffectiveUserName","RoleAssigneeType","RoleAssignmentDelegationType","CustomRecipientWriteScope","CustomConfigWriteScope","RecipientReadScope","ConfigReadScope","RecipientWriteScope","ConfigWriteScope","RoleAssignee","AssignmentMethod","WhenCreated","WhenChanged"],
+			"PropertySelection":["*"],
 			"ProcessPerServer":"false",
 			"Deactivated":"false",
 			"ExplicitActivation":"false",
