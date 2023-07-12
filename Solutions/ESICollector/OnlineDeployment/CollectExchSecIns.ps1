@@ -25,7 +25,10 @@ possibility of such damages
 .OUTPUTS
     The output a csv file of collected data
 .NOTES
-    Developed by ksangui@microsoft.com and Nicolas Lepagnez+
+    Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
+
+    Version : 7.5.1.1 - Released : 12/07/2023 - nilepagn
+        - Correct a bug IdentityString information.
 
     Version : 7.5.1 - Released : 12/07/2023 - nilepagn
         - Correct a bug on cache search for Get-Member.
@@ -1530,7 +1533,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $Object | Add-Member Noteproperty -Name PSCmdL -value $PSCmdL
                 $Object | Add-Member Noteproperty -Name Name -value $Entry.Name
                 $Object | Add-Member Noteproperty -Name Identity -value $Entry.Identity
-                $Object | Add-Member Noteproperty -Name IdentityString -value $Entry.NamedEntry
+                $Object | Add-Member Noteproperty -Name IdentityString -value $NamedEntry
                 $Object | Add-Member Noteproperty -Name WhenCreated -value $Entry.WhenCreated
                 $Object | Add-Member Noteproperty -Name WhenChanged -value $Entry.WhenChanged
                 $Object | Add-Member Noteproperty -Name ExecutionResult -value "Success"

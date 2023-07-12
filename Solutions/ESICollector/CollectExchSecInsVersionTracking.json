@@ -5,6 +5,12 @@
     "ESICollectorRawRepository":"https://github.com/nlepagnez/ESI-PublicContent/raw/main/Solutions/ESICollector/",
     "VersionHistory":[
         {
+            "Version":"7.5.1.1",
+            "InternalVersion":7511,
+            "VersionFileName":"CollectExchSecIns-v7.5.1.1.zip",
+            "BreakingChanges":[]
+        },
+        {
             "Version":"7.5.1.0",
             "InternalVersion":7510,
             "VersionFileName":"CollectExchSecIns-v7.5.1.0.zip",

@@ -2,11 +2,11 @@
 
 You can refer to the Exchange Securitty Insight Collector [here](https://github.com/nlepagnez/ESI-PublicContent/blob/main/ESICollector.md)
 
-## Actual Version : 7.5.1.0
+## Actual Version : 7.5.1.1
 
 ## Upgrade paths
 
-### From 7.5.0 to 7.5.1
+### From 7.5.0 to 7.5.1.1
 
 #### **Configuration File**
 
