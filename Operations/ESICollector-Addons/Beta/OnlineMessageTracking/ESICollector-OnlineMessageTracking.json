@@ -1,0 +1,62 @@
+{
+    "SolutionMetadata":
+	{
+		"JSonVersion":"1.0",
+		"JsonUpdateDate":"27/09/2022",
+		"Description":"Online Message Tracking Auditing to Microsoft Sentinel",
+		"VersionInformation":{
+			"1.0":{
+				"Tracking":["First version of the file"],
+				"MigrationMessageFromLastVersion":"N/A"
+			}
+		}
+	},
+	"AuditFunctionProtectedArea":
+	{
+		"ContentCheckSum":"D11A9A24C41B62323A97D99B553A7012C15FD35A724B90C0A18D305626DD24AC"
+	},
+    "AuditFunctions":[
+		{
+			"Section":"OnlineMessageTracking",
+			"Cmdlet":"Get-MessageTrace -StartDate \"#LastDateTracking#\" -EndDate (Get-Date)",
+			"PropertySelection":["*"],
+			"CustomExpressionForSelection":[],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"All",
+			"PaginationInformation":{
+				"PaginationActivated":"true",
+				"PageSize":5000,
+				"MaxPage":1,
+				"PartialDataUpload":"true",
+				"StorePagesInMemory":"true"
+			},
+			"DateStorageInformation":{
+				"DateStorageActivated":"true",
+				"DateAttribute":"date",
+				"DateStorageMode":"LastDate",
+				"DateReset":"true"
+			}
+		},
+		{
+			"Section":"OnlineDetailedMessageTracking",
+			"Cmdlet":"$MailList = Get-MessageTrace -StartDate \"#LastDateTracking#\" -EndDate (Get-Date) #Pagination# ; foreach ($mail in $MailList){Get-MessageTraceDetail -MessageTraceId $mail.MessageTraceId -MessageId $mail.MessageId -RecipientAddress $mail.RecipientAddress }",
+			"PropertySelection":["*"],
+			"CustomExpressionForSelection":[],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"All",
+			"PaginationInformation":{
+				"PaginationActivated":"true",
+				"PageSize":5000,
+				"MaxPage":1,
+				"PartialDataUpload":"true",
+				"StorePagesInMemory":"true"
+			},
+			"DateStorageInformation":{
+				"DateStorageActivated":"true",
+				"DateAttribute":"date",
+				"DateStorageMode":"LastDate",
+				"DateReset":"true"
+			}
+		}
+    ]
+}

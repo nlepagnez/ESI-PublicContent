@@ -25,7 +25,31 @@ possibility of such damages
 .OUTPUTS
     The output a csv file of collected data
 .NOTES
-    Developed by ksangui@microsoft.com and Nicolas Lepagnez
+    Developed by ksangui@microsoft.com and Nicolas Lepagnez+
+
+    Version : 7.5.1 - Released : 12/07/2023 - nilepagn
+        - Correct a bug on cache search for Get-Member.
+        - Adding variable IdentityString in returned results to standardize between on-premises and online
+        - Adding DN of Groups to collect
+        - Introduction of Pagination System
+            New parameters available for a section :
+                "PaginationInformation":{
+                    "PaginationActivated":"true",
+                    "PageSize":5000,
+                    "MaxPage":1,
+                    "PartialDataUpload":"true",
+                    "StorePagesInMemory":"true"
+                }
+        - Introduction of Date stored by Section
+            "DateStorageInformation":{
+				"DateStorageActivated":"true",
+				"DateAttribute":"date",
+				"DateStorageMode":"LastDate", => Possible values : LastDate, StartDateScript, DateFromAttribute (Attribute name in DateAttribute)
+				"DateReset":"true"
+			}
+        - Introduction of partial saving during execution in Microsoft Sentinel (Via parameter "PartialDataUpload" in PaginationInformation)
+            => Data are uploaded in Microsoft Sentinel each time a page is completed.
+        - Introduce a new category OnlineMessageTracking allowing you to collect information about Message Tracking in Exchange Online on Microsoft Sentinel
 
     Version : 7.5.0 - Released : 05/02/2023 - nilepagn
         - Correct a bug excluding tests with Processing Type "Online" on a Runbook execution.
@@ -141,7 +165,7 @@ Param (
     [switch] $GetVersion
 )
 
-$ESICollectorCurrentVersion = "7.5.0"
+$ESICollectorCurrentVersion = "7.5.1.0"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 #region CapabilitiesManagement
@@ -596,19 +620,45 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 #region Time Management
 
+    function New-LastLaunchTimeObject
+    {
+        Param (
+            [switch] $SpecificFunction,
+            $FunctionName,
+            $LastDateTracking
+        )
+
+        $Object = New-Object PSObject
+        
+        if ($SpecificFunction)
+        {
+            $Object | Add-Member Noteproperty -Name FunctionName -value $FunctionName
+        }
+        else {
+            $Object | Add-Member Noteproperty -Name Tracking -value @()
+        }
+
+        $Object | Add-Member Noteproperty -Name LastDateTracking -value $LastDateTracking
+        
+        return $object
+    }
+
     function Get-LastLaunchTime
     {
+        Param(
+            [switch] $SpecificFunction,
+            [string] $FunctionName,
+            [switch] $Reset
+        )
+
         if ($Global:isRunbook)
         {
-            if ($Global:InstanceName -ne "Default") {$script:LastDateTracking = Get-AutomationVariable -Name "LastDateTracking-$($Global:InstanceName)"}
-            else { $script:LastDateTracking = Get-AutomationVariable -Name LastDateTracking }
+            if ($Global:InstanceName -ne "Default") {$ContentDate = Get-AutomationVariable -Name "LastDateTracking-$($Global:InstanceName)"}
+            else { $ContentDate = Get-AutomationVariable -Name LastDateTracking }
 
-            if ([String]::IsNullOrEmpty($script:LastDateTracking) -or $script:LastDateTracking -like "Never")
+            if ($ContentDate -like "Never")
             {
-                $script:LastDateTracking = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
-            }
-            else {
-                $script:LastDateTracking = Get-Date  $script:LastDateTracking
+                $ContentDate = $null
             }
         }
         else {
@@ -618,28 +668,123 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
             if (Test-Path ((Split-Path $outputpath) + "\$fileName"))
             {
-                $script:LastDateTracking = Get-Date (Get-Content ((Split-Path $outputpath) + "\$fileName"))
+                $ContentDate = Get-Content ((Split-Path $outputpath) + "\$fileName")
             }
-            else
+            else {
+                $ContentDate = $null
+            }
+        }  
+
+        if ($Reset -eq $true -or [string]::IsNullOrEmpty($ContentDate)) { $reset = $true }
+
+        if ($SpecificFunction)
+        {
+            $SpecificDate = $null
+            try{
+                $JSonContent = $ContentDate | ConvertFrom-Json -ErrorAction Stop
+                $Script:LastDateTrackingJSonContent = $JSonContent
+
+                $SpecificFunctionDate = $JsonContent.Tracking | Where-Object { $_.FunctionName -eq $FunctionName }
+
+                if ($Reset -eq $True -or $null -eq $SpecificFunctionDate -or [String]::IsNullOrEmpty($SpecificFunctionDate.LastDateTracking) -or $SpecificFunctionDate.LastDateTracking -like "Never")
+                {
+                    $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                }
+                else {
+                    $SpecificDate = Get-Date $SpecificFunctionDate.LastDateTracking
+                }
+            }
+            catch
+            {
+                Write-LogMessage -Message "Impossible to read the file $fileName, in the new format" -Level Warning -NoOutput
+                $Script:LastDateTrackingJSonContent = $null
+                $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+            }
+
+            return $SpecificDate
+        }
+        else {
+
+            if ($reset)
             {
                 $script:LastDateTracking = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
             }
-        }  
+            else {
+                try{
+                    $JSonContent = $ContentDate | ConvertFrom-Json -ErrorAction Stop
+                    $Script:LastDateTrackingJSonContent = $JSonContent
+
+                    if ([String]::IsNullOrEmpty($JSonContent.LastDateTracking) -or $JSonContent.LastDateTracking -like "Never")
+                    {
+                        $script:LastDateTracking = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                    }
+                    else {
+                        $script:LastDateTracking = Get-Date $JSonContent.LastDateTracking
+                    }
+                }
+                catch
+                {
+                    Write-LogMessage -Message "Impossible to read the file $fileName, in the new format, trying the old one" -Level Warning
+                    $Script:LastDateTrackingJSonContent = $null
+
+                    try{
+                        $script:LastDateTracking = Get-Date $ContentDate
+                    }
+                    catch {
+                        Write-LogMessage -Message "Impossible to find the date in file. Set date as beginning cycle" -Level Warning
+                        $script:LastDateTracking = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                    }
+                }
+            }
+        }
     }
 
     function Set-CurrentLaunchTime
     {
-        if ($Global:isRunbook)
+        Param(
+            [switch] $SpecificFunction,
+            [string] $FunctionName,
+            $DateSuffix,
+            [switch] $Save
+        )
+
+        if ($null -eq $Script:LastDateTrackingJSonContent)
         {
-            if ($Global:InstanceName -ne "Default") {Set-AutomationVariable -Name "LastDateTracking-$($Global:InstanceName)" -Value $DateSuffix.ToString()}
-            else { Set-AutomationVariable -Name LastDateTracking -Value $DateSuffix.ToString() }
+            $Script:LastDateTrackingJSonContent = New-LastLaunchTimeObject -LastDateTracking $script:LastDateTracking
         }
-        else 
-        { 
-            if ($Global:InstanceName -ne "Default") {
-                $DateSuffix | Set-Content ((Split-Path $outputpath) + "\DateTracking-$($Global:InstanceName).esi")
+
+        if ($SpecificFunction)
+        {
+            $SpecificFunctionDate = $Script:LastDateTrackingJSonContent.Tracking | Where-Object { $_.FunctionName -eq $FunctionName }
+
+            if ($null -eq $SpecificFunctionDate)
+            {
+                $SpecificFunctionDate = New-LastLaunchTimeObject -SpecificFunction -FunctionName $FunctionName -LastDateTracking $DateSuffix
+                $Script:LastDateTrackingJSonContent.Tracking += $SpecificFunctionDate
             }
-            else { $DateSuffix | Set-Content ((Split-Path $outputpath) + "\DateTracking.esi") }
+            else {
+                $SpecificFunctionDate.LastDateTracking = $DateSuffix
+            }
+        }
+        else {
+            $Script:LastDateTrackingJSonContent.LastDateTracking = $DateSuffix
+        }
+
+        if ($save)
+        {
+            $JSNToSave = $Script:LastDateTrackingJSonContent | ConvertTo-Json
+            if ($Global:isRunbook)
+            {
+                if ($Global:InstanceName -ne "Default") {Set-AutomationVariable -Name "LastDateTracking-$($Global:InstanceName)" -Value $JSNToSave.ToString()}
+                else { Set-AutomationVariable -Name LastDateTracking -Value $JSNToSave.ToString() }
+            }
+            else 
+            { 
+                if ($Global:InstanceName -ne "Default") {
+                    $JSNToSave | Set-Content ((Split-Path $outputpath) + "\DateTracking-$($Global:InstanceName).esi")
+                }
+                else { $JSNToSave | Set-Content ((Split-Path $outputpath) + "\DateTracking.esi") }
+            }
         }
     }
 
@@ -699,14 +844,14 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         Param(
             $ClearFilesOlderThan,
             $ScriptLogPath,
-            $outputpath
+            $outputpath = $null
         )
 
         $DirectoryList = @()
         $DirectoryList += $ScriptLogPath
-        $DirectoryList += (Split-Path $outputpath)
+        if ($null -ne $outputpath) { $DirectoryList += (Split-Path $outputpath) }
 
-        Write-Host "`t ..Cleaning Report and log files older than $ClearFilesOlderThan days."
+        Write-LogMessage "`t ..Cleaning Report and log files older than $ClearFilesOlderThan days."
         $MaxDate = (Get-Date).AddDays($ClearFilesOlderThan*-1)
 
         $OtherOldFiles = @()
@@ -720,14 +865,14 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                     $OtherPathObj = Get-Item -Path $dir
                     $OtherFiles = $OtherPathObj.GetFiles()
                     $OtherOldFiles = $OtherFiles | Where-Object {$_.LastWriteTime -le $MaxDate}
-                    Write-Host ("`t`t There is "+ $OtherFiles.Count + " existing files in $dir with "+ $OtherOldFiles.Count +" files older than $MaxDate.")
+                    Write-LogMessage ("`t`t There is "+ $OtherFiles.Count + " existing files in $dir with "+ $OtherOldFiles.Count +" files older than $MaxDate.")
                 }
                 elseif (Test-Path ($scriptFolder + "\" + $dir))
                 {
                     $OtherPathObj = Get-Item -Path $dir
                     $OtherFiles = $OtherPathObj.GetFiles()
                     $OtherOldFiles = $OtherFiles | Where-Object {$_.LastWriteTime -le $MaxDate}
-                    Write-Host ("`t`t There is "+ $OtherFiles.Count + " existing files in $dir with "+ $OtherOldFiles.Count +" files older than $MaxDate.")
+                    Write-LogMessage ("`t`t There is "+ $OtherFiles.Count + " existing files in $dir with "+ $OtherOldFiles.Count +" files older than $MaxDate.")
                 }
                 $FileList += $OtherOldFiles
             }
@@ -738,15 +883,259 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         {
             Remove-Item $File.FullName
             $NbRemove += 1
-            Write-Host ("`t`t`t File "+ $File.Name + " Removed.")
+            Write-LogMessage ("`t`t`t File "+ $File.Name + " Removed.")
         }
         
-        Write-Host ("`t`t $NbRemove Files Removed for cleaning process.")
+        Write-LogMessage ("`t`t $NbRemove Files Removed for cleaning process.")
     }
 
 #endregion Log and file Management
 
 #region Sentinel Upload Management
+
+    function Get-OutputOptions
+    {
+        Param(
+            $OutputName
+        )
+
+        $OutputOptions = New-Object PSObject
+        $OutputOptions | Add-Member Noteproperty -Name OutputName -value $OutputName
+        $OutputOptions | Add-Member Noteproperty -Name OutputSentinelAPI -value $null
+        $OutputOptions | Add-Member Noteproperty -Name OutputFileName -value $null
+        $OutputOptions | Add-Member Noteproperty -Name IsPartial -value $false
+        $OutputOptions | Add-Member Noteproperty -Name AlreadyBackuped -value $false
+
+        if ($OutputName -match '_Page')
+        {
+            $OutputOptions.IsPartial = $true
+            if ($OutputName -match '_Page_SentDuringExecution')
+            {
+                $OutputOptions.AlreadyBackuped = $true
+                $OutputName = $OutputName -replace '_Page_SentDuringExecution',''
+            }
+            else
+            {
+                $OutputName = $OutputName -replace '_Page',''
+            }
+        }
+        
+        if ($OutputName -eq "Default") {
+            if ($Script:InstanceName -ne "Default") 
+            {
+                if ([string]::IsNullOrEmpty($Script:InstanceConfiguration.OutputName)) 
+                { 
+                    $TargetOutputName = $script:outputpath -replace '.csv',"-$($Script:InstanceName).csv"
+                    $OutputOptions.OutputFileName = $Script:InstanceName 
+                }
+                else 
+                { 
+                    $OutputOptions.OutputFileName = $Script:InstanceConfiguration.OutputName
+
+                    if ($OutputOptions.OutputFileName -notmatch ".csv$")
+                    {
+                        $OutputOptions.OutputFileName = $OutputOptions.OutputFileName + ".csv"
+                    }
+
+                    $OutputOptions.OutputSentinelAPI = $Script:InstanceConfiguration.OutputName
+                }
+            }
+            else { $OutputOptions.OutputFileName = $script:outputpath }
+        }
+        else {
+            $OutputOptions.OutputFileName = $OutputName
+        }
+
+        if ($OutputName -match '//')
+        {
+            $TargetOutput = $OutputName -split '//'
+            $OutputOptions.OutputFileName = $TargetOutput[0]
+            $OutputOptions.OutputSentinelAPI = $TargetOutput[1]
+        }        
+
+        return $OutputOptions
+    }
+
+    function Start-LogBackup
+    {
+        Param(
+            $OutputName,
+            [switch] $PartialData,
+            $PartialDataName,
+            [switch] $PartialDataRawFormat,
+            $RawData
+        )
+
+        if ($Script:SentinelLogCollector.ActivateLogUpdloadToSentinel)
+        {
+            Start-LogsInjestion -OutputName $OutputName -PartialData:$PartialData -PartialDataName $PartialDataName -PartialDataRawFormat:$PartialDataRawFormat -RawData $RawData
+        }
+
+        if (-not $Script:SentinelLogCollector.ActivateLogUpdloadToSentinel -or $Script:SentinelLogCollector.TogetherMode)
+        {
+            Save-LogsToCSV -OutputName $OutputName -PartialData:$PartialData -PartialDataName $PartialDataName -PartialDataRawFormat:$PartialDataRawFormat -RawData $RawData
+        }
+    }
+
+    function Start-LogsInjestion
+    {
+        Param(
+            $OutputName,
+            [switch] $PartialData,
+            $PartialDataName,
+            [switch] $PartialDataRawFormat,
+            $RawData
+        )
+
+        Write-LogMessage -Message "Injection into Azure Sentinel"
+
+        if ($PartialDataRawFormat)
+        {
+            $ProcessedData = $RawData
+        }
+        elseif ($PartialData)
+        {
+            $ProcessedData = $script:Results[$OutputName][$PartialDataName]
+        }
+        else {
+            $ProcessedData = $script:Results[$OutputName]
+        }
+
+        $OutputOptions = Get-OutputOptions -OutputName $OutputName
+        $OutputSentinelAPI = $OutputOptions.OutputSentinelAPI
+
+        try
+        {   
+            $ResultInjsonFormat = $ProcessedData | ConvertTo-Json -Compress
+            $Global:InjectionTest += $ProcessedData
+        }
+        catch
+        {
+            throw("Input data cannot be converted into a JSON object. Please make sure that the input data is a standard PowerShell table")
+        }
+
+        if ([String]::IsNullOrEmpty($OutputSentinelAPI)) {$OutputSentinelAPI = $Script:SentinelLogCollector.LogTypeName}
+
+        if ($Script:InstanceConfiguration.FileFilterType -match "Categorize" -and [String]::IsNullOrEmpty($Script:InstanceConfiguration.OutputName))
+        {
+            $OutputSentinelAPI  = $OutputSentinelAPI -replace 'ESI', "ESI-$($Script:InstanceConfiguration.Category)-"
+        }
+
+        $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
+        $contentDivision = [math]::Ceiling($ResultLength / ($Script:MaximalSentinelPacketSizeMb *1024*1024))
+
+        if ($contentDivision -le 1)
+        {
+            Write-LogMessage -Message ("Upload payload size is less than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in 1 segment")
+            # Submit the data to the API endpoint
+            Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
+            -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
+            -body ([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat)) `
+            -logType $OutputSentinelAPI
+        }
+        else {
+            
+            Write-LogMessage -Message ("Upload payload size is " + ($ResultLength/1024/1024).ToString("#.#") + "Mb, greater than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in $contentDivision segments")
+
+            $maxCount = [math]::Floor($ProcessedData.Count / $contentDivision)
+
+            $maxSegmentCount = $maxCount
+            $CounterStart = 0
+            $exitNextTime = $false
+            while ($exitNextTime -eq $false)
+            {
+                if ($maxSegmentCount -ge $ProcessedData.Count)
+                {
+                    $maxSegmentCount = $ProcessedData.Count
+                    $exitNextTime = $true
+                }
+                
+                Write-LogMessage -Message ("Sending Segment $CounterStart to $maxSegmentCount")
+
+                $TempTable = @()
+                for ($Counter = $CounterStart; $Counter -lt $maxSegmentCount; $Counter++)
+                {
+                    $TempTable += $ProcessedData[$Counter]
+                }
+
+                $CounterStart = $maxSegmentCount
+                $maxSegmentCount += $maxCount
+
+                $ResultInjsonFormat = $TempTable | ConvertTo-Json -Compress
+
+                Write-LogMessage -Message ("Sending payload : $ResultInjsonFormat")
+
+                try {
+                    # Submit the data to the API endpoint
+                    Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
+                    -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
+                    -body ([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat)) `
+                    -logType $OutputSentinelAPI
+                }
+                catch {
+                    Write-LogMessage -Message ("Error sending to Sentinel. $_") -Level Error
+                }
+                
+            }
+        }
+    }
+
+    function Save-LogsToCSV
+    {
+        Param(
+            $OutputName,
+            [switch] $PartialData,
+            $PartialDataName,
+            [switch] $PartialDataRawFormat,
+            $RawData
+        )
+
+        Write-LogMessage -Message "CSV Creation"
+
+        if ($PartialDataRawFormat)
+        {
+            $ProcessedData = $RawData
+        }
+        elseif ($PartialData)
+        {
+            $ProcessedData = $script:Results[$OutputName][$PartialDataName]
+        }
+        else {
+            $ProcessedData = $script:Results[$OutputName]
+        }
+
+        $OutputOptions = Get-OutputOptions -OutputName $OutputName
+        $OutputFileName = $OutputOptions.OutputFileName
+
+
+        if ($PartialData -or $PartialDataRawFormat)
+        {
+            if ([String]::IsNullOrEmpty($PartialDataName))
+            {
+                $Guid = [guid]::NewGuid().ToString()
+                $OutputFileName = $OutputFileName -replace ".csv", "-$Guid.csv"
+            }
+            else
+            {
+                $OutputFileName = $OutputFileName -replace ".csv", "-$PartialDataName.csv"
+            }
+        }
+
+        $outputdirectorypath = Split-Path $script:outputpath
+
+        # If $OutputFileName does not end with .csv, add it
+        if ($OutputFileName -notmatch ".csv$")
+        {
+            $OutputFileName = $OutputFileName + ".csv"
+        }
+
+        if ((-not $ForceOutputWithoutDate -or $null -eq $ForceOutputWithoutDate) -and $OutputFileName -notmatch "-$DateSuffixForFile.csv")
+        {
+            $OutputFileName = $OutputFileName -replace ".csv", "-$DateSuffixForFile.csv"
+        }
+        if ([String]::IsNullOrEmpty((Split-Path $OutputFileName))) {$OutputFileName = $outputdirectorypath+ "\" + $OutputFileName}
+        $ProcessedData | Export-Csv -Path $OutputFileName -NoTypeInformation
+    }
 
     Function Build-Signature ($customerId, $sharedKey, $date, $contentLength, $method, $contentType, $resource)
     {
@@ -836,7 +1225,9 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             [Parameter(Mandatory=$False)] [String] $TransformationFunction = $null,
             [Parameter(Mandatory=$False)] [Switch] $TransformationForeach,
             [Parameter(Mandatory=$False)] [Switch] $ProcessPerServer,
-            [Parameter(Mandatory=$False)] [Switch] $Norunspace
+            [Parameter(Mandatory=$False)] [Switch] $Norunspace,
+            [Parameter(Mandatory=$False)] [PSCustomObject] $PaginationInformation = $null,
+            [Parameter(Mandatory=$False)] [PSCustomObject] $DateStorageInformation = $null
         )
 
         $Object = New-Object PSObject
@@ -848,6 +1239,55 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $Object | Add-Member Noteproperty -Name TransformationForeach -value $TransformationForeach
         $Object | Add-Member Noteproperty -Name ProcessPerServer -value $ProcessPerServer
         $Object | Add-Member Noteproperty -Name Norunspace -value $Norunspace
+        $Object | Add-Member Noteproperty -Name PaginationInformation -value $PaginationInformation
+        $Object | Add-Member Noteproperty -Name DateStorageInformation -value $DateStorageInformation
+        
+        return $Object
+    }
+
+    #Function to create an object with information about pagination
+    function New-Pagination
+    {
+        Param (
+            [Parameter(Mandatory=$False)] [switch] $PaginationActivated,
+            [Parameter(Mandatory=$False)] [Int] $PageSize = 1000,
+            [Parameter(Mandatory=$False)] [Int] $MaxPage = 1000,
+            [Parameter(Mandatory=$False)] [switch] $PartialDataUpload,
+            [Parameter(Mandatory=$False)] [switch] $StorePagesInMemory
+        )
+
+        $Object = New-Object PSObject
+        $Object | Add-Member Noteproperty -Name PaginationActivated -value $PaginationActivated
+        $Object | Add-Member Noteproperty -Name PageSize -value $PageSize
+        $Object | Add-Member Noteproperty -Name MaxPage -value $MaxPage
+        $Object | Add-Member Noteproperty -Name PartialDataUpload -value $PartialDataUpload
+        $Object | Add-Member Noteproperty -Name StorePagesInMemory -value $StorePagesInMemory
+        
+        return $Object
+    }
+
+    #Function to create an object with information about date
+    function New-DateStorage
+    {
+        Param (
+            [Parameter(Mandatory=$False)] [switch] $DateStorageActivated,
+            [Parameter(Mandatory=$False)] [String] $DateAttribute,
+            [Parameter(Mandatory=$False)] 
+                [ValidateSet("LastDate", "StartDateScript", "DateFromAttribute")] 
+                [String] $DateStorageMode = "LastDate",
+            [Parameter(Mandatory=$False)] $LastDateTracking
+        )
+
+        if ($DateStorageMode -eq "DateFromAttribute" -and [String]::IsNullOrEmpty($DateAttribute))
+        {
+            throw ("Error - DateAttribute must be specified when DateStorageMode is DateFromAttribute")
+        }
+
+        $Object = New-Object PSObject
+        $Object | Add-Member Noteproperty -Name DateStorageActivated -value $DateStorageActivated
+        $Object | Add-Member Noteproperty -Name DateAttribute -value $DateAttribute
+        $Object | Add-Member Noteproperty -Name DateStorageMode -value $DateStorageMode
+        $Object | Add-Member Noteproperty -Name LastDateTracking -value $LastDateTracking
         
         return $Object
     }
@@ -861,70 +1301,166 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $Select = $null,
             $TransformationFunction = $null,
             [switch] $TransformationForeach,
-            $TargetServer = $null
+            $TargetServer = $null,
+            [switch] $SaveDate,
+            $SaveDateAttribute = $null,
+            $Entry,
+            [switch] $PaginationExecution
         )
-        
-        try {
-            if ([String]::IsNullOrEmpty($TargetServer))
+
+        if ($null -ne $Entry.PaginationInformation -and $Entry.PaginationInformation.PaginationActivated) {
+
+            Write-LogMessage -Message ("`tPagination information found for $($Entry.Section) $($Entry.PaginationInformation)") -NoOutput
+
+            $PaginationExecution = $true
+            $EntryOutStream = $Entry.OutputStream + "_Page"
+            $ProcessMaxPage = $Entry.PaginationInformation.MaxPage
+            $ProcessPageSize = $Entry.PaginationInformation.PageSize
+
+            if ($Entry.PaginationInformation.PartialDataUpload)
             {
-                Write-LogMessage -Message ("`tLaunch collection of $Section - $PSCmdL - Global Configuration ...")  -NoOutput
-                $PSCmdLResult = Invoke-Expression $PSCmdL
-            }
-            else
-            {
-                Write-LogMessage -Message ("`tLaunch collection of $Section - $PSCmdL - Per Server Configuration for $TargetServer ...")  -NoOutput
-                $PSCmdL = $PSCmdL -replace "#TargetServer#", $TargetServer
-                $PSCmdLResult = Invoke-Expression $PSCmdL
+                $EntryOutStream = $EntryOutStream + "_SentDuringExecution"
             }
 
-            if (-not [String]::IsNullOrEmpty($TransformationFunction))
-            {
-                if ($TransformationForeach)
+        }
+        else {
+            Write-LogMessage -Message ("`tNo Pagination information found for $($Entry.Section)") -NoOutput
+            $EntryOutStream = $Entry.OutputStream
+            $ProcessMaxPage = 1
+            $ProcessPageSize = 0
+        }
+
+        $ProcessPage = 1
+        $ProcessLoop = $true
+        $EntryList = @{}
+
+        while ($ProcessLoop -and $ProcessPage -le $ProcessMaxPage)
+        {
+            Write-LogMessage -Message ("`t`tLaunch collection $inc on $($FunctionList.count) - Page $ProcessPage") -NoOutput
+
+            $EntrySuboutputPage =  "$($Section)_Page_$($ProcessPage)"
+
+            if ($null -ne $targetServer) {
+                $EntrySuboutputPage = $EntrySuboutputPage + "_$TargetServer"
+            }
+
+            $EntryList[$EntrySuboutputPage] = @()
+
+            if ($PaginationExecution) {
+                if ($EntryCmdlet -match "#Pagination#") 
                 {
-                    $ExecutionForEach = @()
-                    $intMax = $PSCmdLResult.Count
-                    $inc = 0
-                    foreach ($resultObject in $PSCmdLResult)
-                    {
-                        $inc++
-                        Write-LogMessage -Message ("`tTransform Foreach $inc/$intMax - $Section - $PSCmdL - With function $TransformationFunction")  -NoOutput
-                        $ExecutionForEach += Invoke-Expression ("$TransformationFunction -ObjectInput " + '$resultObject')
-                    }
-                    $Execution = $ExecutionForEach
+                    $EntryCmdlet = $EntryCmdlet -replace "#Pagination#", " -PageSize $ProcessPageSize -Page $ProcessPage"
                 }
                 else {
-                    Write-LogMessage -Message ("`tTransform $Section - $PSCmdL - With function $TransformationFunction")  -NoOutput
-                    $Execution = Invoke-Expression ("$TransformationFunction -ObjectInput " + '$PSCmdLResult')
-                }   
-            }
-            else 
-            {
-                $Execution = $PSCmdLResult
+                    $EntryCmdlet = $EntryCmdlet + " -PageSize $ProcessPageSize -Page $ProcessPage"
+                }
             }
 
-            if (-not [String]::IsNullOrEmpty($select))
-            {
-                Write-LogMessage -Message ("`tSelect Attribute $Section - $PSCmdL - With list $select")  -NoOutput
-                $Execution = $Execution | Select-Object $select | Sort-Object $select[0]
+            try {
+                if ([String]::IsNullOrEmpty($TargetServer))
+                {
+                    Write-LogMessage -Message ("`tLaunch collection of $Section - $PSCmdL - Global Configuration ...")  -NoOutput
+                    $PSCmdLResult = Invoke-Expression $PSCmdL
+                }
+                else
+                {
+                    Write-LogMessage -Message ("`tLaunch collection of $Section - $PSCmdL - Per Server Configuration for $TargetServer ...")  -NoOutput
+                    $PSCmdL = $PSCmdL -replace "#TargetServer#", $TargetServer
+                    $PSCmdLResult = Invoke-Expression $PSCmdL
+                }
+
+                if (-not [String]::IsNullOrEmpty($TransformationFunction))
+                {
+                    if ($TransformationForeach)
+                    {
+                        $ExecutionForEach = @()
+                        $intMax = $PSCmdLResult.Count
+                        $inc = 0
+                        foreach ($resultObject in $PSCmdLResult)
+                        {
+                            $inc++
+                            Write-LogMessage -Message ("`tTransform Foreach $inc/$intMax - $Section - $PSCmdL - With function $TransformationFunction")  -NoOutput
+                            $ExecutionForEach += Invoke-Expression ("$TransformationFunction -ObjectInput " + '$resultObject')
+                        }
+                        $Execution = $ExecutionForEach
+                    }
+                    else {
+                        Write-LogMessage -Message ("`tTransform $Section - $PSCmdL - With function $TransformationFunction")  -NoOutput
+                        $Execution = Invoke-Expression ("$TransformationFunction -ObjectInput " + '$PSCmdLResult')
+                    }   
+                }
+                else 
+                {
+                    $Execution = $PSCmdLResult
+                }
+
+                if ($SaveDate)
+                {
+                    Write-LogMessage -Message ("`tSave Date $Section - $PSCmdL - With attribute $SaveDateAttribute")  -NoOutput
+                    $MostRecentObject = $Execution | Select-Object -ExpandProperty $SaveDateAttribute | Sort-Object -Descending | Select-Object -First 1
+                    Set-CurrentLaunchTime -SpecificFunction -FunctionName $Section -DateSuffix $MostRecentObject.$SaveDateAttribute
+                }
+
+                if (-not [String]::IsNullOrEmpty($select))
+                {
+                    Write-LogMessage -Message ("`tSelect Attribute $Section - $PSCmdL - With list $select")  -NoOutput
+                    $Execution = $Execution | Select-Object $select | Sort-Object $select[0]
+                }
+
+                if ($null -ne $Execution) {
+                    Write-LogMessage -Message ("`t`t Generate Result ...")  -NoOutput
+                    $Object = New-Result -Section $Section -PSCmdL $PSCmdL -CmdletResult $Execution -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                }
+                else {
+                    Write-LogMessage -Message ("`t`t Generate empty result ...")  -NoOutput
+                    $Object = New-Result -Section $Section -PSCmdL $PSCmdL -EmptyCmdlet -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                }
+            }
+            catch {
+                $Object = New-Result -Section $Section -PSCmdL $PSCmdL -ErrorText $_.Exception -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                Write-LogMessage -Message ("`t`t Error during data collection - $($_.Exception)")  -NoOutput -Level Error
+                
+                if ($script:PaginationErrorThreshold -le $PaginationErrorCount)
+                {
+                    Write-LogMessage -Message ("`t`t`t Error treshold reached at page $EntrySuboutputPage - Error $PaginationErrorCount of $($script:PaginationErrorThreshold) - Stop pagination for the Section")  -NoOutput -Level Error
+                    $ProcessLoop = $false
+                }
+                else {
+                    $PaginationErrorCount++
+                }
+
             }
 
-            if ($null -ne $Execution) {
-                Write-LogMessage -Message ("`t`t Generate Result ...")  -NoOutput
-                $Object = New-Result -Section $Section -PSCmdL $PSCmdL -CmdletResult $Execution -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+            if ($PaginationExecution -and $Entry.PaginationInformation.PartialDataUpload)
+            {
+                $Goaway = Start-LogBackup -PartialDataRawFormat -RawData $Object -OutputName $EntryOutStream -PartialDataName $EntrySuboutputPage
             }
-            else {
-                Write-LogMessage -Message ("`t`t Generate empty result ...")  -NoOutput
-                $Object = New-Result -Section $Section -PSCmdL $PSCmdL -EmptyCmdlet -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+            
+            if (-not $PaginationExecution -or $Entry.PaginationInformation.StorePagesInMemory)
+            {
+                $EntryList[$EntrySuboutputPage] += $Object
             }
-        }
-        catch {
-            $Object = New-Result -Section $Section -PSCmdL $PSCmdL -ErrorText $_.Exception -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
-            Write-LogMessage -Message ("`t`t Error during data collection - $($_.Exception)")  -NoOutput -Level Error
+
+            if ($Object.count -ne $pageSize) { $ProcessLoop = $false }
+
+            $ProcessPage++
+            if ($ProcessPageSize -gt 0 -and $ProcessPage -gt $ProcessPageSize) {
+                $ProcessLoop = $false
+            }
+
         }
         
         Write-LogMessage -Message ("`tEnd Cmdlet Collection")  -NoOutput
-        return $Object
+
+        if (-not $PaginationExecution)
+        {
+            return $Object
+        }
+        else {
+            return $EntryList
+        }
     }
+
     function New-Result
     {
         Param (
@@ -952,6 +1488,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $Object | Add-Member Noteproperty -Name PSCmdL -value $PSCmdL
             $Object | Add-Member Noteproperty -Name Name -value $null
             $Object | Add-Member Noteproperty -Name Identity -value $null
+            $Object | Add-Member Noteproperty -Name IdentityString -value $null
             $Object | Add-Member Noteproperty -Name WhenCreated -value $null
             $Object | Add-Member Noteproperty -Name WhenChanged -value $null
 
@@ -993,9 +1530,12 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $Object | Add-Member Noteproperty -Name PSCmdL -value $PSCmdL
                 $Object | Add-Member Noteproperty -Name Name -value $Entry.Name
                 $Object | Add-Member Noteproperty -Name Identity -value $Entry.Identity
+                $Object | Add-Member Noteproperty -Name IdentityString -value $Entry.NamedEntry
                 $Object | Add-Member Noteproperty -Name WhenCreated -value $Entry.WhenCreated
                 $Object | Add-Member Noteproperty -Name WhenChanged -value $Entry.WhenChanged
                 $Object | Add-Member Noteproperty -Name ExecutionResult -value "Success"
+
+                if ($null -ne $Object.IdentityString.Name) {$Object.IdentityString = $Object.IdentityString.Name}
 
                 if (-not [String]::IsNullOrEmpty($ServerProcessed))
                 {
@@ -1026,7 +1566,10 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             [Parameter(Mandatory=$True)] $RealCmdlet,
             [Parameter(Mandatory=$false)] $TargetServer = "",
             [Parameter(Mandatory=$True)] $PSInstance,
-            [Parameter(Mandatory=$true)] $RunspaceName
+            [Parameter(Mandatory=$true)] $RunspaceName,
+            [Parameter(Mandatory=$True)] $EntryOutStream,
+            [Parameter(Mandatory=$false)][switch] $IsPaginated,
+            [Parameter(Mandatory=$false)] $EntrySuboutputPage = $null
         )
 
         $Object = New-Object PSObject
@@ -1037,6 +1580,9 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $Object | Add-Member Noteproperty -Name RealCmdlet -value $RealCmdlet
         $Object | Add-Member Noteproperty -Name PSInstance -value $PSInstance
         $Object | Add-Member Noteproperty -Name RunspaceName -value $RunspaceName
+        $Object | Add-Member Noteproperty -Name EntryOutStream -value $EntryOutStream
+        $Object | Add-Member Noteproperty -Name IsPaginated -value $IsPaginated
+        $Object | Add-Member Noteproperty -Name EntrySuboutputPage -value $EntrySuboutputPage
         return $Object
     }
 
@@ -1044,7 +1590,11 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
     {
         Param (
             [Parameter(Mandatory=$True)] $Entry,
-            $TargetServer = $null
+            $TargetServer = $null,
+            [Parameter(Mandatory=$True)] $EntryCmdlet, 
+            [Parameter(Mandatory=$True)] $EntryOutStream,
+            [Parameter(Mandatory=$false)][switch] $IsPaginated,
+            [Parameter(Mandatory=$false)] $EntrySuboutputPage = $null
         )
 
         $AvailableRunspaceName = WaitAndProcess -FindAvailableSlots
@@ -1055,7 +1605,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         }
 
         $Section = $Entry.Section
-        $PSCmdL = $Entry.PSCmdL
+        $PSCmdL = $EntryCmdlet
 
         if ([String]::IsNullOrEmpty($TargetServer))
         {
@@ -1092,7 +1642,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $PSinstance.AddScript($ExecutionCode) | Out-null
 
         $Job = $PSinstance.BeginInvoke()
-        $script:RunningProcesses += New-JobEntry -Entry $Entry -Job $Job -JobName $jobName -TargetServer $TargetServer -RealCmdlet $PSCmdL -PSInstance $PSinstance -RunspaceName $AvailableRunspaceName
+        $script:RunningProcesses += New-JobEntry -Entry $Entry -Job $Job -JobName $jobName -TargetServer $TargetServer -RealCmdlet $PSCmdL -PSInstance $PSinstance -RunspaceName $AvailableRunspaceName -EntryOutStream $EntryOutStream -EntrySuboutputPage $EntrySuboutputPage -IsPaginated:$PaginationExecution
         $Script:RunspaceResults.AvailableRunspaces--
     }
 
@@ -1214,6 +1764,16 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $select = $JobEntry.Entry.select
         $TargetServer = $JobEntry.TargetServer
         
+        if ($JobEntry.Entry.DateStorageInformation.DateStorageActivated -and $JobEntry.Entry.DateStorageInformation.DateStorageMode -eq "DateFromAttribute")
+        {
+            $SaveDate = $True
+            $DateStorageAttribute = $JobEntry.Entry.DateStorageInformation.DateAttribute
+        }
+        else
+        {
+            $SaveDate = $False
+        }
+
         try
         {
             
@@ -1278,6 +1838,13 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $Execution = $PSCmdLResult
             }
 
+            if ($SaveDate)
+            {
+                Write-LogMessage -Message ("`tSave Date $Section - $PSCmdL - With attribute $DateStorageAttribute")  -NoOutput
+                $MostRecentObject = $Execution | Select-Object -ExpandProperty $DateStorageAttribute | Sort-Object -Descending | Select-Object -First 1
+                Set-CurrentLaunchTime -SpecificFunction -FunctionName $Section -DateSuffix $MostRecentObject.$DateStorageAttribute
+            }
+
             if (-not [String]::IsNullOrEmpty($select))
             {
                 Write-LogMessage -Message ("`tSelect Attribute $Section - $PSCmdL - With list $select") -NoOutput
@@ -1298,7 +1865,26 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             Write-LogMessage -Message ("`t`t Error during data collection - $($_.Exception)") -NoOutput -Level Warning
         }
 
-        $Script:Results[$JobEntry.Entry.OutputStream] += $Object
+        if ($JobEntry.IsPaginated -eq $true)
+        {
+            if ($JobEntry.Entry.PaginationInformation)
+            {
+                if ($JobEntry.Entry.PaginationInformation.PartialDataUpload)
+                {
+                    $Script:Results[$JobEntry.EntryOutStream][$EntrySuboutputPage] += $Object
+                    Start-LogBackup -PartialData -PartialDataName $EntrySuboutputPage  -OutputName $JobEntry.EntryOutStream
+                    if (-not $JobEntry.Entry.PaginationInformation.StorePagesInMemory) {$Script:Results[$JobEntry.EntryOutStream][$EntrySuboutputPage] = $null}
+                }
+                else {
+                    $Script:Results[$JobEntry.EntryOutStream][$EntrySuboutputPage] += $Object
+                }
+                
+            }
+        }
+        else {
+            $Script:Results[$JobEntry.EntryOutStream] += $Object
+        }
+        
     }
         
     function CreateRunspaces
@@ -1532,12 +2118,13 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         if (-not [String]::IsNullOrEmpty($TargetName))
         {
             $TargetSamAccountName = $TargetName
+            $DN="BySamAccountName-$TargetName"
         }
         else {
             $TargetSamAccountName = $TargetObject.SamAccountName 
+            $DN=[string]$TargetObject
         }
-
-        $DN=[string]$TargetObject
+ 
         if ($script:GGroupArray.keys -notcontains $DN)
         {
             try {
@@ -1629,6 +2216,8 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         if ($ObjectInput.ObjectClass -like "Group" -and -not $loop)
         {
+            $InfoResult.DN = $ObjectInput.DistinguishedName
+
             #Call Function to retrieve group content
             $dnsrv= (($ObjectInput.DistinguishedName).Substring(($ObjectInput.DistinguishedName).IndexOf("DC=")) -replace ",DC=","." -replace "DC=")
             $list = GetMember -TargetObject $ObjectInput -dnsrvobj $dnsrv
@@ -2118,6 +2707,21 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 }
             }
 
+            if ($null -eq $jsonConfig.Advanced.PaginationErrorThreshold) {
+                $script:PaginationErrorThreshold = 10
+            } 
+            else {
+                if ($jsonConfig.Advanced.PaginationErrorThreshold -ge 100)
+                {
+                    Write-LogMessage -Message "Pägination error threshold $($jsonConfig.Advanced.PaginationErrorThreshold) greater than 100. Maximum number is 100."
+                    $script:PaginationErrorThreshold = 10
+                }
+                else
+                {
+                    [int] $Script:PaginationErrorThreshold = $jsonConfig.Advanced.PaginationErrorThreshold
+                }
+            }
+
 
             if ($null -ne $jsonConfig.MGGraphAPIConnection) {
                 $Script:MGGraphAzureRMCertificate = $jsonConfig.MGGraphAPIConnection.MGGraphAzureRMCertificate
@@ -2505,6 +3109,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         $Replacements = @{
             "#LastDateTracking#" = $script:LastDateTracking; 
+            "#ScriptLaunchedDate#" = $Script:DateSuffix; 
             "#ForestDN#" = $script:ForestDN; 
             "#ForestName#" = $script:ForestName; 
             "#ExchOrgName#" = $script:ExchOrgName; 
@@ -2516,7 +3121,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         if ($FromAddOnFolder)
         {
-            if ($Script:InstanceConfiguration.FileFilterType -contains "Categorize")
+            if ($Script:InstanceConfiguration.FileFilterType -match "Categorize")
             {
                 $TargetAddOnFolder += "Categories/$($Script:InstanceConfiguration.Category)/"
             }
@@ -2639,7 +3244,35 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             if ([string]::IsNullOrEmpty($AuditFunction.OutputStream)) {$TargetOutputStream = "Default"}
             else {$TargetOutputStream = $AuditFunction.OutputStream}
 
-            $FunctionListFromConfig += New-Entry -Section $AuditFunction.Section -PSCmdL $TargetCmdlet -Select $TargetSelect -TransformationFunction $AuditFunction.TransformationFunction -ProcessPerServer:$TargetProcessPerServer  -TransformationForeach:$TransformationForeach -OutputStream $TargetOutputStream -Norunspace:$NoRunspace
+            if ($null -ne $AuditFunction.PaginationInformation)
+            {
+                try {
+                    $PartialDataUpload = [Convert]::ToBoolean($AuditFunction.PaginationInformation.PartialDataUpload)
+                    $StorePagesInMemory = [Convert]::ToBoolean($AuditFunction.PaginationInformation.StorePagesInMemory)
+                    $PaginationInformation = New-Pagination -PaginationActivated:$true -PageSize $AuditFunction.PaginationInformation.PageSize -MaxPage $AuditFunction.PaginationInformation.MaxPage -PartialDataUpload:$PartialDataUpload -StorePagesInMemory:$StorePagesInMemory
+                }
+                catch {
+                    Write-LogMessage -Message "Function $($AuditFunction.Section) contains an invalid PaginationInformation $($AuditFunction.PaginationInformation) / Collection aborted due to security issue" -NoOutput -Level Error; 
+                    throw "Function $($AuditFunction.Section) contains an invalid PaginationInformation $($AuditFunction.PaginationInformation) / Collection aborted due to security issue"
+                }
+            }
+            else { $PaginationInformation = $null }
+
+            if ($null -ne $AuditFunction.DateStorageInformation)
+            {
+                try {
+                    $DateReset = [Convert]::ToBoolean($AuditFunction.DateStorageInformation.DateReset)
+                    $LastDate = Get-LastLaunchTime -SpecificFunction -FunctionName $AuditFunction.Section -Reset:$DateReset
+                    $DateStorageInformation = New-DateStorage -DateStorageActivated:$true -DateStorageMode $AuditFunction.DateStorageInformation.DateStorageMode -LastDateTracking $LastDate
+                }
+                catch {
+                    Write-LogMessage -Message "Function $($AuditFunction.Section) contains an invalid DateStorageInformation $($AuditFunction.$DateStorageInformation) / Collection aborted due to security issue" -NoOutput -Level Error; 
+                    throw "Function $($AuditFunction.Section) contains an invalid DateStorageInformation $($AuditFunction.$DateStorageInformation) / Collection aborted due to security issue"
+                }
+            }
+            else { $DateStorageInformation = $null }
+
+            $FunctionListFromConfig += New-Entry -Section $AuditFunction.Section -PSCmdL $TargetCmdlet -Select $TargetSelect -TransformationFunction $AuditFunction.TransformationFunction -ProcessPerServer:$TargetProcessPerServer  -TransformationForeach:$TransformationForeach -OutputStream $TargetOutputStream -Norunspace:$NoRunspace -PaginationInformation $PaginationInformation -DateStorageInformation $DateStorageInformation
         }
 
         return $FunctionListFromConfig
@@ -2676,6 +3309,8 @@ if (-not $Global:isRunbook )
     if ($InstanceName -ne "Default") { $ScriptLogFile = "$ScriptLogPath\ScriptLog-$InstanceName-$DateSuffixForFile.log" }
     else { $ScriptLogFile = "$ScriptLogPath\ScriptLog-$DateSuffixForFile.log" }
     Start-Transcript -Path $ScriptLogFile
+
+    CleanFiles -ScriptLogPath $ScriptLogPath -ClearFilesOlderThan $ClearFilesOlderThan
 }
 
 try {
@@ -2710,10 +3345,10 @@ if ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) {
 if (-not $Global:isRunbook)
 {
     Write-Host ("Create/Validate Output file path")
-    if (-not (Test-Path (Split-Path $outputpath))) {mkdir (Split-Path $outputpath)}
+    if (-not (Test-Path (Split-Path $script:outputpath))) {mkdir (Split-Path $script:outputpath)}
     if (-not $ForceOutputWithoutDate -or $null -eq $ForceOutputWithoutDate)
     {
-        $outputpath = $outputpath -replace ".csv", "-$DateSuffixForFile.csv"
+        $script:outputpath = $script:outputpath -replace ".csv", "-$DateSuffixForFile.csv"
     }
 }
 
@@ -2731,38 +3366,104 @@ $inc = 1
 Write-LogMessage -Message ("Launch Audit Function loop Collection ...")
 foreach ($Entry in $FunctionList)
 {
-    if ($Entry.OutputStream -notin $Script:Results.Keys) {
-        Write-LogMessage -Message ("`tCreating Output Table for $($Entry.OutputStream)")
-        $Script:Results[$Entry.OutputStream] = @()
+    $PaginationExecution = $false
+    if ($null -ne $Entry.PaginationInformation -and $Entry.PaginationInformation.PaginationActivated) {
+
+        Write-LogMessage -Message ("`tPagination information found for $($Entry.Section) $($Entry.PaginationInformation)")
+
+        $PaginationExecution = $true
+        $EntryOutStream = $Entry.OutputStream + "_Page"
+
+        if ($Entry.PaginationInformation.PartialDataUpload)
+        {
+            $EntryOutStream = $EntryOutStream + "_SentDuringExecution"
+        }
+
+    }
+    else {
+        Write-LogMessage -Message ("`tNo Pagination information found for $($Entry.Section)")
+        $EntryOutStream = $Entry.OutputStream
+    }
+
+    if ($Entry.DateStorageInformation.DateStorageActivated -and $Entry.DateStorageInformation.DateStorageMode -eq "DateFromAttribute")
+    {
+        $SaveDate = $True
+        $DateStorageAttribute = $Entry.DateStorageInformation.DateAttribute
+    }
+    else {
+        $SaveDate = $False
+    }
+
+    if ($EntryOutStream -notin $Script:Results.Keys) {
+        Write-LogMessage -Message ("`tCreating Output Table for $($EntryOutStream)")
+        if ($PaginationExecution) {
+            $Script:Results[$EntryOutStream] = @{}
+        }
+        else {
+            $Script:Results[$EntryOutStream] = @()
+        }
     }
 
     Write-LogMessage -Message ("`tLaunch collection $inc on $($FunctionList.count)")
+
+    $EntryCmdlet = $Entry.PSCmdL
+
+    if ($EntryCmdlet -match "#LastDateOfSection#" -and $Entry.DateStorageInformation.DateStorageActivated) 
+    {
+        $EntryCmdlet = $EntryCmdlet -replace "#LastDateOfSection#", $Entry.DateStorageInformation.LastDateTracking
+    }
+
     if ($Entry.ProcessPerServer)
     {
         if ($script:CapabilityLoaded -notcontains "OP") {
             Write-LogMessage -Message ("`tImpossible to launch a Per Server action without OP capability") -Level Warning
             $ErrorMessage = "`tImpossible to launch a Per Server action without OP capability"
-            $Script:Results[$Entry.OutputStream] += New-Result -Section $Entry.Section -PSCmdL $Entry.PSCmdL -ErrorText $ErrorMessage -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID
+            
+            $Script:Results[$EntryOutStream] += New-Result -Section $Entry.Section -PSCmdL $EntryCmdlet -ErrorText $ErrorMessage -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID
             continue;
         }
 
         foreach ($ExchangeServer in $script:ExchangeServerList.ListSRVUp)
         {
-            if (($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) -and $Entry.NoRunpace -eq $false) {
-                processParallel -Entry $Entry -TargetServer $ExchangeServer
+            if (($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) -and $Entry.NoRunpace -eq $false -and -not $PaginationExecution) {
+                processParallel -Entry $Entry -TargetServer $ExchangeServer -EntryCmdlet $EntryCmdlet -EntryOutStream $EntryOutStream -EntrySuboutputPage $EntrySuboutputPage -IsPaginated:$PaginationExecution
             }
             else {
-                $Script:Results[$Entry.OutputStream] += GetCmdletExec -Section $Entry.Section -PSCmdL $Entry.PSCmdL -Select $Entry.Select -TransformationFunction $Entry.TransformationFunction -TargetServer $ExchangeServer -TransformationForeach:$Entry.TransformationForeach
+                if ($PaginationExecution -and ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess))
+                {
+                    Write-LogMessage -Message ("`tParallel process for pagination not supported, fallback to sequential process for the section $($Entry.Section)") -Level Warning
+                }
+                
+                $Script:Results[$EntryOutStream] += GetCmdletExec -Section $Entry.Section -PSCmdL $EntryCmdlet -Select $Entry.Select -TransformationFunction $Entry.TransformationFunction -TargetServer $ExchangeServer -TransformationForeach:$Entry.TransformationForeach -SaveDate:$SaveDate -SaveDateAttribute $DateStorageAttribute -Entry $Entry -PaginationExecution:$PaginationExecution
             }
-        }
+        }  
     }
     else
     {
-        if ($Script:GlobalParallelProcess -and $Entry.NoRunpace -eq $false) {
-            processParallel -Entry $Entry
+        if ($Script:GlobalParallelProcess -and $Entry.NoRunpace -eq $false -and -not $PaginationExecution) {
+            processParallel -Entry $Entry -EntryCmdlet $EntryCmdlet -EntryOutStream $EntryOutStream -EntrySuboutputPage $EntrySuboutputPage -IsPaginated:$PaginationExecution
         }
         else {
-            $Script:Results[$Entry.OutputStream] += GetCmdletExec -Section $Entry.Section -PSCmdL $Entry.PSCmdL -Select $Entry.Select -TransformationFunction $Entry.TransformationFunction -TransformationForeach:$Entry.TransformationForeach
+            if ($PaginationExecution -and ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess))
+            {
+                Write-LogMessage -Message ("`tParallel process for pagination not supported, fallback to sequential process for the section $($Entry.Section)") -Level Warning
+            }
+
+            $Script:Results[$EntryOutStream] += GetCmdletExec -Section $Entry.Section -PSCmdL $EntryCmdlet -Select $Entry.Select -TransformationFunction $Entry.TransformationFunction -TransformationForeach:$Entry.TransformationForeach  -SaveDate:$SaveDate -SaveDateAttribute $DateStorageAttribute -Entry $Entry -PaginationExecution:$PaginationExecution
+
+        }
+    }
+
+    if ($Entry.DateStorageInformation.DateStorageActivated -and -not $SaveDate)
+    {
+        switch ($Entry.DateStorageInformation.DateStorageMode)
+        {
+            "LastDate" {
+                Set-CurrentLaunchTime -SpecificFunction -FunctionName $Entry.Section -DateSuffix (Get-Date -Format "yyyy-MM-dd HH:mm:ss K")
+            }
+            "StartDateScript" {
+                Set-CurrentLaunchTime -SpecificFunction -FunctionName $Entry.Section -DateSuffix $Script:DateSuffix
+            }
         }
     }
 
@@ -2778,117 +3479,31 @@ $Global:InjectionTest = @()
 
 foreach ($OutputName in $Script:Results.Keys)
 {
-    if ($OutputName -contains '//')
-    {
-        $TargetOutput = $OutputName -split '//'
-        $OutputFileName = $TargetOutput[0]
-        $OutputSentinelAPI = $TargetOutput[1]
-    }
-    else {
-        $OutputFileName = $OutputName
-    }
+    $OutputOptions = Get-OutputOptions -OutputName $OutputName
     
-    if ($Script:SentinelLogCollector.ActivateLogUpdloadToSentinel)
+    if ($OutputOptions.IsPartial)
     {
-        Write-LogMessage -Message "Injection into Azure Sentinel"
-        try
-        {   
-            $ResultInjsonFormat = $script:Results[$OutputName] | ConvertTo-Json -Compress
-            $Global:InjectionTest += $script:Results[$OutputName] 
-        }
-        catch
+        if ($OutputOptions.AlreadyBackuped)
         {
-            throw("Input data cannot be converted into a JSON object. Please make sure that the input data is a standard PowerShell table")
-        }
-
-        if ([String]::IsNullOrEmpty($OutputSentinelAPI)) {$OutputSentinelAPI = $Script:SentinelLogCollector.LogTypeName}
-
-        if ($Script:InstanceConfiguration.FileFilterType -contains "Categorize")
-        {
-            $OutputSentinelAPI  = $OutputSentinelAPI -replace 'ESI', "ESI-$($Script:InstanceConfiguration.Category)-"
-        }
-
-        $ResultLength = [System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat).Length
-        $contentDivision = [math]::Ceiling($ResultLength / ($Script:MaximalSentinelPacketSizeMb *1024*1024))
-
-        if ($contentDivision -le 1)
-        {
-            Write-LogMessage -Message ("Upload payload size is less than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in 1 segment")
-            # Submit the data to the API endpoint
-            Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
-            -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
-            -body ([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat)) `
-            -logType $OutputSentinelAPI
+            Write-LogMessage -Message ("`tPartial Output $OutputName already processed, skipping ...")
+            continue;
         }
         else {
-            
-            Write-LogMessage -Message ("Upload payload size is " + ($ResultLength/1024/1024).ToString("#.#") + "Mb, greater than $($Script:MaximalSentinelPacketSizeMb)Mb. It will be sent in $contentDivision segments")
-
-            $maxCount = [math]::Floor($script:Results[$OutputName].Count / $contentDivision)
-
-            $maxSegmentCount = $maxCount
-            $CounterStart = 0
-            $exitNextTime = $false
-            while ($exitNextTime -eq $false)
+            foreach ($SubpageKey in $Script:Results[$OutputName].Keys)
             {
-                if ($maxSegmentCount -ge $script:Results[$OutputName].Count)
-                {
-                    $maxSegmentCount = $script:Results[$OutputName].Count
-                    $exitNextTime = $true
-                }
-                
-                Write-LogMessage -Message ("Sending Segment $CounterStart to $maxSegmentCount")
-
-                $TempTable = @()
-                for ($Counter = $CounterStart; $Counter -lt $maxSegmentCount; $Counter++)
-                {
-                    $TempTable += $script:Results[$OutputName][$Counter]
-                }
-
-                $CounterStart = $maxSegmentCount
-                $maxSegmentCount += $maxCount
-
-                $ResultInjsonFormat = $TempTable | ConvertTo-Json -Compress
-
-                Write-LogMessage -Message ("Sending payload : $ResultInjsonFormat")
-
-                try {
-                    # Submit the data to the API endpoint
-                    Post-LogAnalyticsData -customerId $Script:SentinelLogCollector.WorkspaceId `
-                    -sharedKey $Script:SentinelLogCollector.WorkspaceKey `
-                    -body ([System.Text.Encoding]::UTF8.GetBytes($ResultInjsonFormat)) `
-                    -logType $OutputSentinelAPI
-                }
-                catch {
-                    Write-LogMessage -Message ("Error sending to Sentinel. $_") -Level Error
-                }
-                
+                Start-LogBackup -PartialData -PartialDataName $SubpageKey -OutputName $OutputName
             }
         }
-        
     }
+    else {
 
-    if (-not $Script:SentinelLogCollector.ActivateLogUpdloadToSentinel -or $Script:SentinelLogCollector.TogetherMode)
-    {
-        if ($OutputName -eq "Default") {
-            $Results[$OutputName] | Export-Csv -Path $outputpath -NoTypeInformation
-        }
-        else
-        {
-            $outputdirectorypath = Split-Path $outputpath
-            if (-not $ForceOutputWithoutDate -or $null -eq $ForceOutputWithoutDate)
-            {
-                $OutputFileName = $OutputFileName -replace ".csv", "-$DateSuffixForFile.csv"
-            }
-            $generatedOutputName = $outputdirectorypath + "\" + $OutputFileName
-            $Results[$OutputName] | Export-Csv -Path $generatedOutputName -NoTypeInformation
-        }
-    }
+        if ($Script:Results[$OutputName].count -gt 0) { Start-LogBackup -OutputName $OutputName }
+    }    
 }
 
 if (-not $NoDateTracing)
 {
-    Set-CurrentLaunchTime
+    Set-CurrentLaunchTime -DateSuffix $Script:DateSuffix -Save
 }
 
 Write-LogMessage -Message ("Exchange Configuration Collector script finished")
@@ -2896,12 +3511,15 @@ Write-Output "`n**************** LOGS **********************"
 Write-Output (Get-UDSLogs)
 Write-Output "**************** END LOGS **********************`n"
 $end = Get-Date
-Write-LogMessage -Message "Execution done. Time elapsed: $(($end-$start).TotalSeconds)s Processed messages: $processedMessagesCount"
-Write-LogMessage -Message "Execution done. Time elapsed: $(($end-$start).TotalSeconds)s Processed messages: $processedMessagesCount" -Level Warning
+Write-LogMessage -Message "Execution done. Time elapsed: $(($end-$start).TotalSeconds)s"
+Write-LogMessage -Message "Execution done. Time elapsed: $(($end-$start).TotalSeconds)s" -Level Warning
 
 if ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) {
     WaitAndProcess
     Write-LogMessage -Message ("Close Created Runspaces")
 	CloseRunspaces
 }
-Stop-Transcript
+if (-not $Global:isRunbook )
+{
+    Stop-Transcript
+}

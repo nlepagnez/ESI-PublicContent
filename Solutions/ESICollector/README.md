@@ -2,9 +2,28 @@
 
 You can refer to the Exchange Securitty Insight Collector [here](https://github.com/nlepagnez/ESI-PublicContent/blob/main/ESICollector.md)
 
-## Actual Version : 7.5.0
+## Actual Version : 7.5.1.0
 
 ## Upgrade paths
+
+### From 7.5.0 to 7.5.1
+
+#### **Configuration File**
+
+Parameter "PaginationErrorThreshold": 5 is added in the Advanced part
+
+A new category OnlineMessageTracking could be added. The segment can be added in InstanceConfiguration part : 
+    "ExchangeOnlineMessageTracking":{
+			"All":"true",
+			"Category":"OnlineMessageTracking",
+			"Capabilities":"OL",
+			"OutputName":"ExchangeOnlineMessageTracking"
+		}
+
+#### **ESI Collector Script**
+
+Replace the old script version with the new one. nothing to modifiy in the script.
+
 
 ### From 7.4.2 to 7.5.0
 
