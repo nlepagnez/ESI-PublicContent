@@ -1,10 +1,14 @@
 {
-  "UpdatedDate": "2023-07-08T19:05:16.3404442+02:00",
-  "Files": [
-    {
-      "FileName": "ESICollector-OnlineMessageTracking.json",
-      "FileCheckSum": "D3377EBAE955DC7ACA389AC6A00E2F51E2E4A55F4D47A5EAC6A6CE467D67BFD8",
-      "ContentCheckSum": "A7068A39A4647CB33704038F09B4D8C71DB39C4C32632710C539C245577F65AF"
-    }
-  ]
+    "UpdatedDate":  {
+                        "value":  "\/Date(1689429081012)\/",
+                        "DisplayHint":  2,
+                        "DateTime":  "samedi 15 juillet 2023 15:51:21"
+                    },
+    "Files":  [
+                  {
+                      "FileName":  "ESICollector-OnlineMessageTracking.json",
+                      "FileCheckSum":  "F63DBC17E92BF054A5AA5661FFC43EA379A7D6C12503851EAC6CDD9DA32D64BC",
+                      "ContentCheckSum":  "A584328753324B506B8B93F6958DBEDF5B89ABA9E141F5F1D2BA5BFEF0A8B466"
+                  }
+              ]
 }
