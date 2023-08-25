@@ -27,6 +27,19 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
 
+     Version : 7.5.2 - Released : NOT RELEASED - nilepagn
+        - Implement a minimal config version
+        - Correct multiple bugs on regex configuration filteging and categorization
+        - Enhancement of the Audit function loop by adding protection on malformed data
+        - Possibiltiy to launch the Collector for Microsoft Online from a server instead of a Runbook
+        - Adding a "ResetType" on the DateStorageInformation Section to be able to start on a specific date if needed. Possible values : 
+            "CurrentDate" : Start from current date
+            "LastDateOfScript" : Start from last date stored in the file for the script
+            "Standard" : "Apply the same rule as the script : Current date minus "DefaultDurationTracking" parameter in days
+            "SpecificDate[YourDate]" : Start from a specific date specified in the parameter "YourDate"
+            "Current-AddUnit[YourNumber]" : Start from current date plus/minus a number of unit (replace unit by Days, months, Years, hours, minutes, seconds as desired) specified in the parameter "YourNumber"
+        - In the very little case where 'Get-AutomationVariable' is an existing function outside Azure Automation, we check the precense of a module Orchestrator*. We now offer the possibility to force execution outside Azure Automation by passing the switch IsOutsideAzureAutomation for script execution.
+
     Version : 7.5.1.1 - Released : 12/07/2023 - nilepagn
         - Correct a bug IdentityString information.
 
@@ -165,11 +178,15 @@ Param (
     $EPS2010=$false,
     [switch] $NoDateTracing, 
     [string] $InstanceName = "Default",
-    [switch] $GetVersion
+    [switch] $GetVersion,
+    [string] $ReceivedTenantName,
+    [switch] $IsOutsideAzureAutomation
 )
 
-$ESICollectorCurrentVersion = "7.5.1.0"
+$ESICollectorCurrentVersion = "7.5.2.0"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
+
+$Script:SupportedConfigurationVersion = "2.4"
 
 #region CapabilitiesManagement
 
@@ -179,13 +196,19 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $TenantName
         )
 
+        $TempVerbosePreference = $VerbosePreference
+        $VerbosePreference = "SilentlyContinue"
+
         if ($Global:isRunbook)
         {
-            Connect-ExchangeOnline -ManagedIdentity -ShowBanner:$false -Organization $TenantName
+            Connect-ExchangeOnline -ManagedIdentity -ShowBanner:$false -Organization $TenantName -Verbose:$false
         }
         else {
-            Connect-ExchangeOnline
+            Connect-ExchangeOnline -Verbose:$false
         }
+
+        $VerbosePreference = $TempVerbosePreference
+
     }
         
     Function Get-ExchangeServerList
@@ -651,7 +674,9 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         Param(
             [switch] $SpecificFunction,
             [string] $FunctionName,
-            [switch] $Reset
+            [switch] $Reset,
+            [string] $resetType = $null,
+            [string] $SpecificFormat = $null
         )
 
         if ($Global:isRunbook)
@@ -684,22 +709,111 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         {
             $SpecificDate = $null
             try{
-                $JSonContent = $ContentDate | ConvertFrom-Json -ErrorAction Stop
-                $Script:LastDateTrackingJSonContent = $JSonContent
+                try {
+                    $JSonContent = $ContentDate | ConvertFrom-Json -ErrorAction Stop
+                    $Script:LastDateTrackingJSonContent = $JSonContent
+                    $SpecificFunctionDate = $JsonContent.Tracking | Where-Object { $_.FunctionName -eq $FunctionName }
+                }
+                catch {
+                    Write-LogMessage -Message "Impossible to read the file $fileName, in the new format" -Level Warning -NoOutput
+                    $Script:LastDateTrackingJSonContent = $null
+                    $SpecificFunctionDate = $null
+                }
 
-                $SpecificFunctionDate = $JsonContent.Tracking | Where-Object { $_.FunctionName -eq $FunctionName }
-
-                if ($Reset -eq $True -or $null -eq $SpecificFunctionDate -or [String]::IsNullOrEmpty($SpecificFunctionDate.LastDateTracking) -or $SpecificFunctionDate.LastDateTracking -like "Never")
+                if ($Reset -eq $True -or $null -eq $SpecificFunctionDate `
+                    -or [String]::IsNullOrEmpty($SpecificFunctionDate.LastDateTracking) `
+                    -or $SpecificFunctionDate.LastDateTracking -like "Never")
                 {
-                    $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                    # if resetType start with "SpecificDate" or "Current-AddDays" or "Current-AddMonths" or "Current-AddYears" or "Current-AddHours" or "Current-AddMinutes" or "Current-AddSeconds" then extract value inside []
+                    if ($resetType -like "SpecificDate*" -or $resetType -like "Current-Add*")
+                    {
+                        $resetType = $resetType.Substring(0,$resetType.IndexOf("]"))
+                        $resetValue = $resetType.Substring($resetType.IndexOf("[")+1)
+                        $resetType = $resetType.Substring(0,$resetType.IndexOf("["))
+
+                        #if resetType start with "Current-Add" then extract the unit after "Add"
+                        if ($resetType -like "Current-Add*")
+                        {
+                            $resetUnit = $resetType.Substring($resetType.IndexOf("-Add")+4)
+                            $resetType = "Current-Add"
+                        }
+                        else {
+                            Write-LogMessage "Impossible to find the unit to add to the current date in the parameter $resetType" -NoOutput -Level Error
+                            $resetType = "Standard"
+                        }
+                    }
+                    
+                    switch ($resetType)
+                    {
+                        "CurrentDate"{
+                            $SpecificDate = (Get-Date)
+                        }
+                        "LastDateOfScript"{
+                            #Start from last date stored in the file for the script
+                            $SpecificDate = $script:LastDateTracking
+                        }
+                        "Standard"{
+                            #Apply the same rule as the script : Current date minus "DefaultDurationTracking" parameter in days
+                            $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                        }
+                        "SpecificDate"{
+                            #Start from a specific date specified in the parameter "YourDate"
+                            try {
+                                #try convert the value to a date
+                                $SpecificDate = Get-Date $resetValue
+                            }
+                            catch {
+                                Write-LogMessage -Message "Impossible to convert the value $resetValue to a date, Standard method will be used" -NoOutput -Level Error
+                                $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                            }
+                        }
+                        "Current-Add"{
+                            #Start from current date plus/minus a number of days specified in the parameter "YourNumber"
+                            #Try to convert the value to an integer
+                            try{
+                                $resetValue = [int]$resetValue
+
+                                switch ($resetUnit)
+                                {
+                                    "Days" { $SpecificDate = (Get-Date).AddDays($resetValue) }
+                                    "Months" { $SpecificDate = (Get-Date).AddMonths($resetValue) }
+                                    "Years" { $SpecificDate = (Get-Date).AddYears($resetValue) }
+                                    "Hours" { $SpecificDate = (Get-Date).AddHours($resetValue) }
+                                    "Minutes" { $SpecificDate = (Get-Date).AddMinutes($resetValue) }
+                                    "Seconds" { $SpecificDate = (Get-Date).AddSeconds($resetValue) }
+                                    default { 
+                                        Write-LogMessage -Message "The value $resetUnit is not a valid unit to add to a date, Standard method will be used" -NoOutput -Level Error
+                                        $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1) 
+                                    }
+                                }
+
+                            }
+                            catch{
+                                Write-LogMessage -Message "Impossible to convert the value $resetValue to an integer, Standard method will be used" -NoOutput -Level Error
+                                $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
+                            }
+                        }
+                        default { $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1) }
+                    }
+                    
+                    if ($null -ne $SpecificFunctionDate) 
+                    { 
+                        $SpecificFunctionDate.LastDateTracking = $SpecificDate
+                    }
+                    else { $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1) }
                 }
                 else {
                     $SpecificDate = Get-Date $SpecificFunctionDate.LastDateTracking
                 }
+
+                if (-not [String]::IsNullOrEmpty($SpecificFormat))
+                {
+                    $SpecificDate = $SpecificDate.ToString($SpecificFormat)
+                }
             }
             catch
             {
-                Write-LogMessage -Message "Impossible to read the file $fileName, in the new format" -Level Warning -NoOutput
+                Write-LogMessage -Message "Impossible to generate a date using DateStorage specification. Error : $($_.Exception.Message)" -Level Warning -NoOutput
                 $Script:LastDateTrackingJSonContent = $null
                 $SpecificDate = (Get-Date).AddDays($Script:DefaultDurationTracking * -1)
             }
@@ -748,6 +862,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             [switch] $SpecificFunction,
             [string] $FunctionName,
             $DateSuffix,
+            [string] $SpecificFormat,
             [switch] $Save
         )
 
@@ -758,6 +873,11 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         if ($SpecificFunction)
         {
+            if (-not [string]::IsNullOrEmpty($SpecificFormat))
+            {
+                $DateSuffix = $DateSuffix.ToString($SpecificFormat)
+            }
+            
             $SpecificFunctionDate = $Script:LastDateTrackingJSonContent.Tracking | Where-Object { $_.FunctionName -eq $FunctionName }
 
             if ($null -eq $SpecificFunctionDate)
@@ -1278,7 +1398,8 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             [Parameter(Mandatory=$False)] 
                 [ValidateSet("LastDate", "StartDateScript", "DateFromAttribute")] 
                 [String] $DateStorageMode = "LastDate",
-            [Parameter(Mandatory=$False)] $LastDateTracking
+            [Parameter(Mandatory=$False)] $LastDateTracking,
+            [Parameter(Mandatory=$False)] $SpecificFormat
         )
 
         if ($DateStorageMode -eq "DateFromAttribute" -and [String]::IsNullOrEmpty($DateAttribute))
@@ -1291,6 +1412,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $Object | Add-Member Noteproperty -Name DateAttribute -value $DateAttribute
         $Object | Add-Member Noteproperty -Name DateStorageMode -value $DateStorageMode
         $Object | Add-Member Noteproperty -Name LastDateTracking -value $LastDateTracking
+        $Object | Add-Member Noteproperty -Name SpecificFormat -value $SpecificFormat
         
         return $Object
     }
@@ -1313,7 +1435,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         if ($null -ne $Entry.PaginationInformation -and $Entry.PaginationInformation.PaginationActivated) {
 
-            Write-LogMessage -Message ("`tPagination information found for $($Entry.Section) $($Entry.PaginationInformation)") -NoOutput
+            Write-LogMessage -Message ("`tPagination data for $($Entry.Section) added for Execution") -NoOutput
 
             $PaginationExecution = $true
             $EntryOutStream = $Entry.OutputStream + "_Page"
@@ -1336,6 +1458,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
         $ProcessPage = 1
         $ProcessLoop = $true
         $EntryList = @{}
+        $PaginationErrorCount = 0
 
         while ($ProcessLoop -and $ProcessPage -le $ProcessMaxPage)
         {
@@ -1350,26 +1473,29 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             $EntryList[$EntrySuboutputPage] = @()
 
             if ($PaginationExecution) {
-                if ($EntryCmdlet -match "#Pagination#") 
+                if ($PSCmdL -match "#Pagination#") 
                 {
-                    $EntryCmdlet = $EntryCmdlet -replace "#Pagination#", " -PageSize $ProcessPageSize -Page $ProcessPage"
+                    $EntryCmdlet = $PSCmdL -replace "#Pagination#", " -PageSize $ProcessPageSize -Page $ProcessPage"
                 }
                 else {
-                    $EntryCmdlet = $EntryCmdlet + " -PageSize $ProcessPageSize -Page $ProcessPage"
+                    $EntryCmdlet = $PSCmdL + " -PageSize $ProcessPageSize -Page $ProcessPage"
                 }
+            }
+            else {
+                $EntryCmdlet = $PSCmdL
             }
 
             try {
                 if ([String]::IsNullOrEmpty($TargetServer))
                 {
-                    Write-LogMessage -Message ("`tLaunch collection of $Section - $PSCmdL - Global Configuration ...")  -NoOutput
-                    $PSCmdLResult = Invoke-Expression $PSCmdL
+                    Write-LogMessage -Message ("`tLaunch collection of $Section - $EntryCmdlet - Global Configuration ...")  -NoOutput
+                    $PSCmdLResult = Invoke-Expression $EntryCmdlet
                 }
                 else
                 {
-                    Write-LogMessage -Message ("`tLaunch collection of $Section - $PSCmdL - Per Server Configuration for $TargetServer ...")  -NoOutput
-                    $PSCmdL = $PSCmdL -replace "#TargetServer#", $TargetServer
-                    $PSCmdLResult = Invoke-Expression $PSCmdL
+                    Write-LogMessage -Message ("`tLaunch collection of $Section - $EntryCmdlet - Per Server Configuration for $TargetServer ...")  -NoOutput
+                    $PSCmdL = $EntryCmdlet -replace "#TargetServer#", $TargetServer
+                    $PSCmdLResult = Invoke-Expression $EntryCmdlet
                 }
 
                 if (-not [String]::IsNullOrEmpty($TransformationFunction))
@@ -1382,13 +1508,13 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                         foreach ($resultObject in $PSCmdLResult)
                         {
                             $inc++
-                            Write-LogMessage -Message ("`tTransform Foreach $inc/$intMax - $Section - $PSCmdL - With function $TransformationFunction")  -NoOutput
+                            Write-LogMessage -Message ("`tTransform Foreach $inc/$intMax - $Section - $EntryCmdlet - With function $TransformationFunction")  -NoOutput
                             $ExecutionForEach += Invoke-Expression ("$TransformationFunction -ObjectInput " + '$resultObject')
                         }
                         $Execution = $ExecutionForEach
                     }
                     else {
-                        Write-LogMessage -Message ("`tTransform $Section - $PSCmdL - With function $TransformationFunction")  -NoOutput
+                        Write-LogMessage -Message ("`tTransform $Section - $EntryCmdlet - With function $TransformationFunction")  -NoOutput
                         $Execution = Invoke-Expression ("$TransformationFunction -ObjectInput " + '$PSCmdLResult')
                     }   
                 }
@@ -1399,28 +1525,28 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
                 if ($SaveDate)
                 {
-                    Write-LogMessage -Message ("`tSave Date $Section - $PSCmdL - With attribute $SaveDateAttribute")  -NoOutput
+                    Write-LogMessage -Message ("`tSave Date $Section - $EntryCmdlet - With attribute $SaveDateAttribute")  -NoOutput
                     $MostRecentObject = $Execution | Select-Object -ExpandProperty $SaveDateAttribute | Sort-Object -Descending | Select-Object -First 1
                     Set-CurrentLaunchTime -SpecificFunction -FunctionName $Section -DateSuffix $MostRecentObject.$SaveDateAttribute
                 }
 
                 if (-not [String]::IsNullOrEmpty($select))
                 {
-                    Write-LogMessage -Message ("`tSelect Attribute $Section - $PSCmdL - With list $select")  -NoOutput
+                    Write-LogMessage -Message ("`tSelect Attribute $Section - $EntryCmdlet - With list $select")  -NoOutput
                     $Execution = $Execution | Select-Object $select | Sort-Object $select[0]
                 }
 
                 if ($null -ne $Execution) {
                     Write-LogMessage -Message ("`t`t Generate Result ...")  -NoOutput
-                    $Object = New-Result -Section $Section -PSCmdL $PSCmdL -CmdletResult $Execution -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                    $Object = New-Result -Section $Section -PSCmdL $EntryCmdlet -CmdletResult $Execution -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
                 }
                 else {
                     Write-LogMessage -Message ("`t`t Generate empty result ...")  -NoOutput
-                    $Object = New-Result -Section $Section -PSCmdL $PSCmdL -EmptyCmdlet -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                    $Object = New-Result -Section $Section -PSCmdL $EntryCmdlet -EmptyCmdlet -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
                 }
             }
             catch {
-                $Object = New-Result -Section $Section -PSCmdL $PSCmdL -ErrorText $_.Exception -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                $Object = New-Result -Section $Section -PSCmdL $EntryCmdlet -ErrorText $_.Exception -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
                 Write-LogMessage -Message ("`t`t Error during data collection - $($_.Exception)")  -NoOutput -Level Error
                 
                 if ($script:PaginationErrorThreshold -le $PaginationErrorCount)
@@ -1436,7 +1562,15 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
             if ($PaginationExecution -and $Entry.PaginationInformation.PartialDataUpload)
             {
-                $Goaway = Start-LogBackup -PartialDataRawFormat -RawData $Object -OutputName $EntryOutStream -PartialDataName $EntrySuboutputPage
+                try {
+                    $Goaway = Start-LogBackup -PartialDataRawFormat -RawData $Object -OutputName $EntryOutStream -PartialDataName $EntrySuboutputPage
+                }
+                catch {
+                    $Object = New-Result -Section $Section -PSCmdL $EntryCmdlet -ErrorText $_.Exception -EntryDate $Script:DateSuffix -ScriptInstanceID $Script:ScriptInstanceID -ServerProcessed $TargetServer
+                    $Script:Results["Default"] += $Object
+                    Write-LogMessage -Message ("`t`t Error during partial data backup, error injected in Default result table - $($_.Exception)")  -NoOutput -Level Error
+                }
+                
             }
             
             if (-not $PaginationExecution -or $Entry.PaginationInformation.StorePagesInMemory)
@@ -1444,10 +1578,11 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $EntryList[$EntrySuboutputPage] += $Object
             }
 
-            if ($Object.count -ne $pageSize) { $ProcessLoop = $false }
+            if ($null -eq $Object.count -or $Object.count -lt $ProcessPageSize) { $ProcessLoop = $false }
 
             $ProcessPage++
-            if ($ProcessPageSize -gt 0 -and $ProcessPage -gt $ProcessPageSize) {
+            if ($Script:MaxPageNumber -gt 0 -and $ProcessPage -gt $Script:MaxPageNumber) {
+                Write-LogMessage -Message ("`t`t Max authorized number of page processed. $ProcessPage / $($Script:MaxPageNumber). Protection activated on page processing")  -NoOutput -Level Warning
                 $ProcessLoop = $false
             }
 
@@ -2135,7 +2270,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             }
             catch {
                 Write-LogMessage -Message "Impossible to retreive member using Get-ADGroupMember for $TargetSamAccountName" -NoOutput -Level Warning
-                if ($dnsrvobj -notcontains "3268" -and $dnsrvobj -notcontains "3269")
+                if ($dnsrvobj -notmatch "3268" -and $dnsrvobj -notmatch "3269")
                 {
                     $gctarget = $dnsrvobj + ":3268"
                 }
@@ -2591,7 +2726,12 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 if (-not [String]::IsNullOrEmpty($ReceivedTenantName)) { $script:TenantName = $ReceivedTenantName}
                 else { $script:TenantName = $Global:TenantName }
             }
-            
+
+            #Verify that the version of configuration file is greater than supported version
+            if ($jsonConfig.SolutionMetadata.JSonVersion -lt $script:SupportedConfigurationVersion)
+            {
+                Write-LogMessage -Message "Configuration file version $($jsonConfig.SolutionMetadata.JSonVersion) is outdated. Features could not work correctly. Supported version is $($script:SupportedConfigurationVersion)" -Level Warning
+            }
                 
             [int] $Script:ParallelTimeout = $jsonConfig.Global.ParallelTimeoutMinutes # Minutes
             [int] $script:MaxParallel = $jsonConfig.Global.MaxParallelRunningJobs
@@ -2880,10 +3020,10 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 $GithubSourcePath += "/Beta"
             }
 
-            if ($Script:InstanceConfiguration.FileFilterType -contains "Categorize")
+            if ($Script:InstanceConfiguration.FileFilterType -match "Categorize")
             {
                 $ScriptAddonCachePath += "Categories\$($Script:InstanceConfiguration.Category)\"
-                $GithubSourcePath += "/Categories/$($Script:InstanceConfiguration.Category)"
+                $GithubSourcePath += "/Categories/$($Script:InstanceConfiguration.Category)/"
             }
 
             Push-Location ($scriptFolder);
@@ -3006,27 +3146,41 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             return LoadAuditFunctions -ProcessingType $ProcessingType -FromAddOnFolder -TargetAddOnFolder $ScriptAddonCachePath
         }
         else {
-            return LoadAuditFunctionsForRunBook -ProcessingType $ProcessingType
+            return LoadAuditFunctionsForRunBook -ProcessingType $ProcessingType -Beta:$Beta
         }
     }
 
     function LoadAuditFunctionsForRunBook
     {
         Param (
-            $ProcessingType
+            $ProcessingType,
+            [switch] $Beta
         )
 
         # Process in Memory without storage
         # Retrieve File Checksum list
         $GithubSourcePath = "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/"
+        
+        if ($Beta)
+        {
+            $GithubSourcePath += "/Beta"
+        }
+
+        Write-LogMessage "Filter $($Script:InstanceConfiguration.FileFilterType) - Category $($Script:InstanceConfiguration.Category)" -NoOutput
+
+        if ($Script:InstanceConfiguration.FileFilterType -match "Categorize")
+        {
+            $GithubSourcePath += "/Categories/$($Script:InstanceConfiguration.Category)/"
+        }
+        
         try {
             if ($Useproxy)
             {
-                $WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing -Proxy $Script:ProxyUrl
+                $WebResult = invoke-WebRequest -Uri "$GithubSourcePath/ESIChecksumFiles.json" -UseBasicParsing -Proxy $Script:ProxyUrl
             }
             else
             {
-                $WebResult = invoke-WebRequest -Uri "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/ESIChecksumFiles.json" -UseBasicParsing 
+                $WebResult = invoke-WebRequest -Uri "$GithubSourcePath/ESIChecksumFiles.json" -UseBasicParsing 
             }
         }   
         catch {
@@ -3051,7 +3205,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 }
             }
 
-            if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -contains "Filtered")
+            if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -match "Filtered")
             {
                 if ($OnlineFile.FileName -notin $Script:InstanceConfiguration.FileFilterList)
                 {
@@ -3060,7 +3214,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 }
             }
 
-            if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -contains "Ignored")
+            if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -match "Ignored")
             {
                 if ($OnlineFile.FileName -in $Script:InstanceConfiguration.FileIgnoreList)
                 {
@@ -3086,8 +3240,11 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                 Throw "Impossible to load Audit Functions, Critical for collection. Error :" + $_
             }
             $OnlineAuditFunctionsFile = $WebResult.Content | ConvertFrom-Json
+            Write-LogMessage -Message "Nb Audit Functions found :$($OnlineAuditFunctionsFile.AuditFunctions.count) for $($OnlineFile.FileName)" -NoOutput -Level Info;
             $AuditFunctionList += $OnlineAuditFunctionsFile.AuditFunctions 
         }
+
+        Write-LogMessage -Message "Audit Functions loaded from Online Github " -NoOutput -Level Info;
 
         # Call LoadFunction
         return LoadAuditFunctions -AuditFunctionList $AuditFunctionList -ProcessingType "Online"
@@ -3124,7 +3281,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
 
         if ($FromAddOnFolder)
         {
-            if ($Script:InstanceConfiguration.FileFilterType -match "Categorize")
+            if ($Script:InstanceConfiguration.FileFilterType -match "Categorize" -and $TargetAddOnFolder -notlike "*Categories*")
             {
                 $TargetAddOnFolder += "Categories/$($Script:InstanceConfiguration.Category)/"
             }
@@ -3149,7 +3306,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                     }
                 }
 
-                if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -contains "Filtered")
+                if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -match "Filtered")
                 {
                     if ($file.Name -notin $Script:InstanceConfiguration.FileFilterList)
                     {
@@ -3158,7 +3315,7 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
                     }
                 }
 
-                if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -contains "Ignored")
+                if (-not $FileToIgnore -and $Script:InstanceConfiguration.FileFilterType -match "Ignored")
                 {
                     if ($file.Name -in $Script:InstanceConfiguration.FileIgnoreList)
                     {
@@ -3265,8 +3422,12 @@ if ($GetVersion) {return $ESICollectorCurrentVersion}
             {
                 try {
                     $DateReset = [Convert]::ToBoolean($AuditFunction.DateStorageInformation.DateReset)
-                    $LastDate = Get-LastLaunchTime -SpecificFunction -FunctionName $AuditFunction.Section -Reset:$DateReset
-                    $DateStorageInformation = New-DateStorage -DateStorageActivated:$true -DateStorageMode $AuditFunction.DateStorageInformation.DateStorageMode -LastDateTracking $LastDate
+                    $LastDate = Get-LastLaunchTime -SpecificFunction -FunctionName $AuditFunction.Section `
+                         -Reset:$DateReset -resetType $AuditFunction.DateStorageInformation.ResetType `
+                         -SpecificFormat $AuditFunction.DateStorageInformation.DateStorageFormat
+                    $DateStorageInformation = New-DateStorage -DateStorageActivated:$true `
+                        -DateStorageMode $AuditFunction.DateStorageInformation.DateStorageMode -LastDateTracking $LastDate `
+                        -SpecificFormat $AuditFunction.DateStorageInformation.DateStorageFormat
                 }
                 catch {
                     Write-LogMessage -Message "Function $($AuditFunction.Section) contains an invalid DateStorageInformation $($AuditFunction.$DateStorageInformation) / Collection aborted due to security issue" -NoOutput -Level Error; 
@@ -3287,15 +3448,28 @@ $InformationPreference = "Continue"
 $start = Get-Date
 $DateSuffixForFile = Get-Date -Format "yyyy-MM-dd-HH-mm-ss"
 $DateSuffix = Get-Date -Format "yyyy-MM-dd HH:mm:ss K"
-$Global:isRunbook = !($null -eq (Get-Command "Get-AutomationVariable" -ErrorAction SilentlyContinue))
+$Global:isRunbook = if (-not $IsOutsideAzureAutomation) 
+    {
+        if (!($null -eq (Get-Command "Get-AutomationVariable" -ErrorAction SilentlyContinue)))
+        {
+            if ($null -eq (Get-Module -Name Orchestrator* -ErrorAction SilentlyContinue))
+            {
+                $false
+            }
+            else {$true}
+        }
+        else {$false}
+    } else {$false}
 $Global:InstanceName = $InstanceName
 $Script:MaximalSentinelFieldMemberListSizeKb = 20
+$Script:MaxPageNumber = 1000
 $Script:Runspaces = @{}
 $script:ht_domains = @{}
 $script:GUserArray=@{}
 $script:GGroupArray=@{}
 $Script:Results = @{}
 $Script:Results["Default"] = @()
+$Global:InjectionTest = @()
 
 # Force TLS1.2 to make sure we can download from HTTPS
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -3317,7 +3491,7 @@ if (-not $Global:isRunbook )
 }
 
 try {
-    LoadConfiguration -configurationFile $JSONFileCondiguration -VariableFromAzureAutomation:$Global:isRunbook -InstanceName $InstanceName -ErrorAction Stop
+    LoadConfiguration -configurationFile $JSONFileCondiguration -VariableFromAzureAutomation:$Global:isRunbook -InstanceName $InstanceName -ReceivedTenantName $ReceivedTenantName -ErrorAction Stop
 }
 catch {
     Write-LogMessage -Message "Configuration not loaded. Impossible to continue."
@@ -3369,6 +3543,20 @@ $inc = 1
 Write-LogMessage -Message ("Launch Audit Function loop Collection ...")
 foreach ($Entry in $FunctionList)
 {
+    if ([string]::IsNullOrEmpty($Entry.Section)) 
+    { 
+        try {
+            Write-LogMessage -Message ("`tNo Section found for $($Entry.ToString()) / Collection aborted for this object due to security issue, continue to next object") -NoOutput -Level Error;
+        }
+        catch {
+            Write-LogMessage -Message ("`tNo Section found and Entry format can't be displayed for analysis / Collection aborted for this object due to security issue, continue to next object") -NoOutput -Level Error;
+        }
+        $inc++
+        continue
+    }
+    
+    Write-LogMessage -Message ("`tLaunch collection $inc on $($FunctionList.count) for $($Entry.Section)")
+
     $PaginationExecution = $false
     if ($null -ne $Entry.PaginationInformation -and $Entry.PaginationInformation.PaginationActivated) {
 
@@ -3406,8 +3594,6 @@ foreach ($Entry in $FunctionList)
             $Script:Results[$EntryOutStream] = @()
         }
     }
-
-    Write-LogMessage -Message ("`tLaunch collection $inc on $($FunctionList.count)")
 
     $EntryCmdlet = $Entry.PSCmdL
 
@@ -3478,7 +3664,6 @@ if ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess) {
 }
 
 Write-LogMessage -Message ("Launch CSV Creation / Sentinel Payload uploading ...")
-$Global:InjectionTest = @()
 
 foreach ($OutputName in $Script:Results.Keys)
 {
