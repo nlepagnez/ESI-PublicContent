@@ -27,7 +27,7 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
 
-     Version : 7.5.2 - Released : NOT RELEASED - nilepagn
+    Version : 7.5.2 - Released : 17/08/2023 - nilepagn
         - Implement a minimal config version
         - Correct multiple bugs on regex configuration filteging and categorization
         - Enhancement of the Audit function loop by adding protection on malformed data
