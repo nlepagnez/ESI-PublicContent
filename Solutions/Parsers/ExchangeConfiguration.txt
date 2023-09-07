@@ -35,7 +35,15 @@
 // This parser assumes the raw log from the ESI Exchange Collector are on the ESIExchangeConfig_CL and/or ESIExchangeOnlineConfig_CL tables and are uploaded using the builtin REST API uploader of the Collector.
 //
 //
-// Parameters
+// Parameters simulation
+// If you need to test the parser execution without saving it as a function, uncomment the bellow variable to simulate parameters values.
+//
+// let SpecificSectionList = '';
+// let SpecificConfigurationDate = 'lastdate';
+// let SpecificConfigurationEnv = 'All';
+// let Target = 'On-Premises';
+//
+// Parameters definition
 let _SpecificSectionList = split(SpecificSectionList,',');
 let _configurationDate = iff(isnull(SpecificConfigurationDate) or isempty(SpecificConfigurationDate),"lastdate",tostring(SpecificConfigurationDate));
 let _configurationEnv = split(iff(isnull(SpecificConfigurationEnv) or isempty(SpecificConfigurationEnv) or tolower(SpecificConfigurationEnv) == "all","All",tostring(SpecificConfigurationEnv)),',');
