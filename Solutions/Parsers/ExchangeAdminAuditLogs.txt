@@ -1,8 +1,10 @@
 // Title:           ESI - Exchange Admin Audit Logs Parser
 // Author:          Microsoft
-// Version:         1.0
-// Last Updated:    15/11/2022
+// Version:         1.1.0
+// Last Updated:    21/09/2023
 // Comment:  
+//      v1.1 :
+//          - Watchlist ExchangeVIP is not mandatory anymore
 //      v1.0 : 
 //          - Function initilisation for Sentinel Solution
 //  
@@ -24,8 +26,11 @@
 // This parser assumes that MS Exchange Management Logs from Exchange Servers Event Logs are collected in Log Analytics.
 //
 //
-let cVIPs = _GetWatchlist('ExchangeVIP') | project tostring(canonicalName) ;
-let sVIPs = _GetWatchlist('ExchangeVIP') | project tostring(sAMAccountName) ;
+let fuzzyWatchlist = datatable(userPrincipalName:string, sAMAccountName:string, objectSID:string, objectGUID:string, canonicalName:string, comment:string) [
+    "NONE","NONE","NONE","NONE","NONE","NONE"];
+let Watchlist = union isfuzzy=true withsource=TableName _GetWatchlist('ExchangeVIP'), fuzzyWatchlist | where objectGUID != "NONE" | project-away TableName;
+let cVIPs = Watchlist | project tostring(canonicalName) ;
+let sVIPs = Watchlist | project tostring(sAMAccountName) ;
 let CmdletCheck = externaldata (Cmdlet:string, UserOriented:string, RestrictToParameter:string, Parameters:string)[h"https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/Watchlists/CmdletWatchlist.csv"]with(format="csv",ignoreFirstRecord=true);
 let SensitiveCmdlets = externaldata (Cmdlet:string, UserOriented:string, RestrictToParameter:string, Parameters:string)[h"https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/Watchlists/CmdletWatchlist.csv"]with(format="csv",ignoreFirstRecord=true) | project tostring(Cmdlet) ;
 let Env = ExchangeConfiguration(SpecificSectionList="ESIEnvironment")
