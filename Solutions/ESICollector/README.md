@@ -2,11 +2,11 @@
 
 You can refer to the Exchange Securitty Insight Collector [here](https://github.com/nlepagnez/ESI-PublicContent/blob/main/ESICollector.md)
 
-## Actual Version : 7.5.2.0
+## Actual Version : 7.5.2.1
 
 ## Upgrade paths
 
-### From 7.5.1.1 to 7.5.2.0
+### From 7.5.2.0 to 7.5.2.1
 
 #### **Configuration File**
 
@@ -19,6 +19,16 @@ A new category OnlineMessageTracking could be added. The segment can be added in
 			"Capabilities":"OL",
 			"OutputName":"ExchangeOnlineMessageTracking"
 		}
+
+#### **ESI Collector Script**
+
+Replace the old script version with the new one. nothing to modifiy in the script.
+
+### From 7.5.1.1 to 7.5.2.0
+
+#### **Configuration File**
+
+Nothing changed
 
 #### **ESI Collector Script**
 

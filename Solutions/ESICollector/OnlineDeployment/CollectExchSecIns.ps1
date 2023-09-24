@@ -27,6 +27,9 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
 
+    Version : 7.5.2.1 - Released : 24/09/2023 - nilepagn
+        - Implement an IdentityString for ESIEnvironment Section to be sure that the ESIExchangeConfig table is correctly created in Sentinel
+
     Version : 7.5.2 - Released : 17/08/2023 - nilepagn
         - Implement a minimal config version
         - Correct multiple bugs on regex configuration filteging and categorization
@@ -183,7 +186,7 @@ Param (
     [switch] $IsOutsideAzureAutomation
 )
 
-$ESICollectorCurrentVersion = "7.5.2.0"
+$ESICollectorCurrentVersion = "7.5.2.1"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 $Script:SupportedConfigurationVersion = "2.4"
@@ -614,6 +617,7 @@ $Script:SupportedConfigurationVersion = "2.4"
                 foreach ($domain in $script:ht_domains.Keys)
                 {
                     $Object = New-Object PSObject
+                    $Object | Add-Member Noteproperty -Name Name -value $script:ht_domains[$domain].DCFQDN
                     $Object | Add-Member Noteproperty -Name DomainNetBios -value $domain
                     $Object | Add-Member Noteproperty -Name DCFQDN -value $script:ht_domains[$domain].DCFQDN
                     $Object | Add-Member Noteproperty -Name DomainFQDN -value $script:ht_domains[$domain].DomainFQDN
