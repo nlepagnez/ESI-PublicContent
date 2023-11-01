@@ -1,8 +1,10 @@
 // Title:           ESI - Exchange Admin Audit Logs Parser
 // Author:          Microsoft
-// Version:         1.1.0
-// Last Updated:    21/09/2023
+// Version:         1.2.0
+// Last Updated:    01/11/2023
 // Comment:  
+//      v1.2 :
+//          - The fuzzyTable need to have an objectGuid in a Guid format to be aligned with the watchlist.
 //      v1.1 :
 //          - Watchlist ExchangeVIP is not mandatory anymore
 //      v1.0 : 
@@ -26,9 +28,9 @@
 // This parser assumes that MS Exchange Management Logs from Exchange Servers Event Logs are collected in Log Analytics.
 //
 //
-let fuzzyWatchlist = datatable(userPrincipalName:string, sAMAccountName:string, objectSID:string, objectGUID:string, canonicalName:string, comment:string) [
-    "NONE","NONE","NONE","NONE","NONE","NONE"];
-let Watchlist = union isfuzzy=true withsource=TableName _GetWatchlist('ExchangeVIP'), fuzzyWatchlist | where objectGUID != "NONE" | project-away TableName;
+let fuzzyWatchlist = datatable(userPrincipalName:string, sAMAccountName:string, objectSID:string, objectGUID:guid, canonicalName:string, comment:string) [
+    "NONE","NONE","NONE","00000001-0000-1000-0000-100000000000","NONE","NONE"];
+let Watchlist = union isfuzzy=true withsource=TableName _GetWatchlist('ExchangeVIP'), fuzzyWatchlist | where objectGUID != "00000001-0000-1000-0000-100000000000" | project-away TableName;
 let cVIPs = Watchlist | project tostring(canonicalName) ;
 let sVIPs = Watchlist | project tostring(sAMAccountName) ;
 let CmdletCheck = externaldata (Cmdlet:string, UserOriented:string, RestrictToParameter:string, Parameters:string)[h"https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/Watchlists/CmdletWatchlist.csv"]with(format="csv",ignoreFirstRecord=true);
