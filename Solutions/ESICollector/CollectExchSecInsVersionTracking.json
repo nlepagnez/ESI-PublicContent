@@ -1,9 +1,21 @@
 {
-    "LatestVersion":"7.5.2.0",
-    "LatestVersionDate":"2023-08-17T00:00:00.000Z",
+    "LatestVersion":"7.5.2.2",
+    "LatestVersionDate":"2023-11-05T00:00:00.000Z",
     "LatestVersionDownload":"https://aka.ms/ESI-ExchangeCollector-RawScript",
     "ESICollectorRawRepository":"https://github.com/nlepagnez/ESI-PublicContent/raw/main/Solutions/ESICollector/",
     "VersionHistory":[
+        {
+            "Version":"7.5.2.2",
+            "InternalVersion":7522,
+            "VersionFileName":"CollectExchSecIns-v7.5.2.2.zip",
+            "BreakingChanges":[]
+        },
+        {
+            "Version":"7.5.2.1",
+            "InternalVersion":7521,
+            "VersionFileName":"CollectExchSecIns-v7.5.2.1.zip",
+            "BreakingChanges":[]
+        },
         {
             "Version":"7.5.2.0",
             "InternalVersion":7520,

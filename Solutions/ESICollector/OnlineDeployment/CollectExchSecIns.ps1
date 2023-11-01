@@ -27,6 +27,9 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
 
+    Version : 7.5.2.2 - Released : 05/11/2023 - nilepagn
+        - Correct a bug when Parallelisation is disabled and a PerServer function is called.
+
     Version : 7.5.2.1 - Released : 24/09/2023 - nilepagn
         - Implement an IdentityString for ESIEnvironment Section to be sure that the ESIExchangeConfig table is correctly created in Sentinel
 
@@ -186,7 +189,7 @@ Param (
     [switch] $IsOutsideAzureAutomation
 )
 
-$ESICollectorCurrentVersion = "7.5.2.1"
+$ESICollectorCurrentVersion = "7.5.2.2"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 $Script:SupportedConfigurationVersion = "2.4"
@@ -1499,7 +1502,7 @@ $Script:SupportedConfigurationVersion = "2.4"
                 {
                     Write-LogMessage -Message ("`tLaunch collection of $Section - $EntryCmdlet - Per Server Configuration for $TargetServer ...")  -NoOutput
                     $PSCmdL = $EntryCmdlet -replace "#TargetServer#", $TargetServer
-                    $PSCmdLResult = Invoke-Expression $EntryCmdlet
+                    $PSCmdLResult = Invoke-Expression $PSCmdL
                 }
 
                 if (-not [String]::IsNullOrEmpty($TransformationFunction))
