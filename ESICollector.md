@@ -7,6 +7,8 @@
 
     Multiple Exchange Cmdlets and Active-Directory/Microsoft Graph cmdlets are used to extract information that will be used by Microsoft Exchange Security for Microsoft Sentinel to create a secure posture in your Exchange On-Premises/Online environment.
 
+    Parameters are described in the Configuration file. Explanation of the parameters is available in the [the Parameters description document](./Parameters.md)
+
 ## On-Premises Collector
 
 ### Mandatory Permissions
@@ -18,6 +20,10 @@ The account used to launch the script has to be Organization Management.
   > The collector must be able to contact every Exchange Server in WMI and in Remote PowerShell.
 
 (Normally the Organization Management group allow the above rights excepted if you have brake inheritance in AD or made custom **unsupported** hardening between Exchange Servers.)
+
+USD Logs (Summary of logs of the Collector) :
+
+  > If the USD Logs storage is AzureStorageAccount, the ManagedIdentity or the created Entra ID Application needs to have the Storage Blob Data Contributor role at minimum to be able to write logs in the storage account.
 
 ### Network Access
 
@@ -59,3 +65,7 @@ Exchange Online permissions :
   > The collector has to have Exchange.ManageAsApp permission to be able to connect to Exchange
 
   > The collector must be Global Reader at minimum to be able to read Exchange Online configuration. This permission has to assigned manually after Managed account creation.
+
+USD Logs (Summary of logs of the Collector) :
+
+  > If the USD Logs storage is AzureStorageAccount, the ManagedIdentity or the created Entra ID Application needs to have the Storage Blob Data Contributor role at minimum to be able to write logs in the storage account.
