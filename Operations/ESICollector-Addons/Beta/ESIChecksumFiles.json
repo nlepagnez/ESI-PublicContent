@@ -1,19 +1,14 @@
 {
     "UpdatedDate":  {
-                        "value":  "\/Date(1708543208220)\/",
+                        "value":  "\/Date(1708692562683)\/",
                         "DisplayHint":  2,
-                        "DateTime":  "mercredi 21 fevrier 2024 20:20:08"
+                        "DateTime":  "vendredi 23 f�vrier 2024 13:49:22"
                     },
     "Files":  [
                   {
                       "FileName":  "ESICollector-MailboxInformation.json",
                       "FileCheckSum":  "CF3D34A0C419E4A78AEAAB053FC5AEC746E59F6CF29FC928B0D69F5B2C3646BC",
                       "ContentCheckSum":  "9C00B6393FFD6D704F11D4007DB531A45EC6CD68259A0591F4DA41BE76471CBE"
-                  },
-                  {
-                      "FileName":  "ESICollector-DAGMailboxDatabaseConfiguration.json",
-                      "FileCheckSum":  "C2FDE5B3CA0CC17D94EC7B672C8B9DBF73AE803A1B5881126759D5A8AA7874B1",
-                      "ContentCheckSum":  "2B0E663B4545873F3D084A0BA86178CF0701D815B7526736F5AB6D184AE7498A"
                   },
                   {
                       "FileName":  "ESICollector-RoleAndGroupConfiguration.json",
@@ -32,8 +27,8 @@
                   },
                   {
                       "FileName":  "ESICollector-ManagementRoles.json",
-                      "FileCheckSum":  "052A020BD7A382E1492406472ECD1B18F1E36241BC2E4A3DC5D579D3DC26F2C0",
-                      "ContentCheckSum":  "099D468E94891F8C74CE266C7712C66B9827D6F45804653413F6D56849F2C710"
+                      "FileCheckSum":  "BD94AFDAA2331A547CA6E7F575BC4B6022F9FDCA1A06F9CEC9E42F8CCFE75E64",
+                      "ContentCheckSum":  "7F953A2C3B0B1775F045DAD89F1EC29FA5C3DD9F35BAAAE3CAD97663B3BE997A"
                   },
                   {
                       "FileName":  "ESICollector-POPIMAPConfiguration.json",
@@ -44,6 +39,11 @@
                       "FileName":  "ESICollector-VIPAudit.json",
                       "FileCheckSum":  "4BDF6A4DC17CA0DBF41F70966A353F1C6D313144572340C650A96C6830687A48",
                       "ContentCheckSum":  "042F7C5A2AD5631B3403B3222E274A1C3D76928A3B997F2BD4CCA11AB7EFD09B"
+                  },
+                  {
+                      "FileName":  "ESICollector-DAGMailboxDatabaseConfiguration.json",
+                      "FileCheckSum":  "C2FDE5B3CA0CC17D94EC7B672C8B9DBF73AE803A1B5881126759D5A8AA7874B1",
+                      "ContentCheckSum":  "2B0E663B4545873F3D084A0BA86178CF0701D815B7526736F5AB6D184AE7498A"
                   }
               ]
 }
