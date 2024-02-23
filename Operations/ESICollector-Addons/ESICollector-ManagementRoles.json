@@ -1,14 +1,10 @@
 {
     "SolutionMetadata":
 	{
-		"JSonVersion":"1.3",
-		"JsonUpdateDate":"23/02/2024",
+		"JSonVersion":"1.2",
+		"JsonUpdateDate":"27/02/2023",
 		"Description":"All Audit Functions around Management Roles",
 		"VersionInformation":{
-			"1.3":{
-				"Tracking":["Changing Properties of 'MRACustomDetails'."],
-				"MigrationMessageFromLastVersion":"Replacing MRACustomDetails Properties"
-			},
 			"1.2":{
 				"Tracking":["Changing Properties of 'MRA'. Changing to *"],
 				"MigrationMessageFromLastVersion":"Replacing MRA Properties to *"
@@ -25,7 +21,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"7F953A2C3B0B1775F045DAD89F1EC29FA5C3DD9F35BAAAE3CAD97663B3BE997A"
+		"ContentCheckSum":"099D468E94891F8C74CE266C7712C66B9827D6F45804653413F6D56849F2C710"
 	},
     "AuditFunctions":[
         {
@@ -48,9 +44,6 @@
 			"Section":"MRCustomDetails",
 			"Cmdlet":"$result=@();$AllCustomMR=Get-ManagementRole | ? { $_.IsRootRole -eq $false -and $_.IsEndUserRole -eq $false };foreach ($CustomMR in $AllCustomMR) {$ParentRole = $CustomMR.Parent ; $result += Get-ManagementRoleEntry $CustomMR\\* | select Role,Name,Type,WhenCreated,WhenChanged,@{Name=\"Parameters\";Expression={[string]::join(\";\",($_.Parameters))}}, @{Name=\"ParentRole\";Expression={$ParentRole}} };$result",
 			"PropertySelection":["Role","Name","Type","WhenCreated","WhenChanged","Parameters"],
-			"CustomExpressionForSelection":[
-				{"Name":"ParametersString", "Expression":"$_.Parameters -join ','"}
-			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"All"
 		},
