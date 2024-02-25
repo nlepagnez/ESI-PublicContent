@@ -1,8 +1,8 @@
 {
     "UpdatedDate":  {
-                        "value":  "\/Date(1708692562683)\/",
+                        "value":  "\/Date(1708849915815)\/",
                         "DisplayHint":  2,
-                        "DateTime":  "vendredi 23 f�vrier 2024 13:49:22"
+                        "DateTime":  "dimanche 25 f�vrier 2024 09:31:55"
                     },
     "Files":  [
                   {
@@ -27,8 +27,8 @@
                   },
                   {
                       "FileName":  "ESICollector-ManagementRoles.json",
-                      "FileCheckSum":  "BD94AFDAA2331A547CA6E7F575BC4B6022F9FDCA1A06F9CEC9E42F8CCFE75E64",
-                      "ContentCheckSum":  "7F953A2C3B0B1775F045DAD89F1EC29FA5C3DD9F35BAAAE3CAD97663B3BE997A"
+                      "FileCheckSum":  "C1A0CF84F08F1FB9C3FBFAB025768E4652BCE79A9A9AFCAC551A837373A8FF58",
+                      "ContentCheckSum":  "C3ED88BB66E0E45B25A1E6D8333C5AC84149921C5F736F9C577889468293729D"
                   },
                   {
                       "FileName":  "ESICollector-POPIMAPConfiguration.json",
