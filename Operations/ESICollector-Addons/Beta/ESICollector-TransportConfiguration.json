@@ -2,7 +2,7 @@
     "SolutionMetadata":
 	{
 		"JSonVersion":"1.2",
-		"JsonUpdateDate":"21/02/2024",
+		"JsonUpdateDate":"25/02/2024",
 		"Description":"All Audit Functions around Transport configuration",
 		"VersionInformation":{
 			"1.2":{
@@ -21,7 +21,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"06847865904D680E4D6675B4CF0268931C0C651F64EEFB50048635AB8083A14A"
+		"ContentCheckSum":"FCB2C58EBB71A8283443A19313486F86CD656994173DD890B8020C44241D5118"
 	},
     "AuditFunctions":[
         {
@@ -66,9 +66,11 @@
 			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
 				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
+				{"Name":"SentToScopeString", "Expression":"$_.SentToScope -join ','"},
 				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
 				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
-				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"}
+				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"},
+				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"Online"
