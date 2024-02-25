@@ -21,7 +21,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"FCB2C58EBB71A8283443A19313486F86CD656994173DD890B8020C44241D5118"
+		"ContentCheckSum":"74851CC1347273FFF9D3621537E499CCA06D92E58FE8F46DE2205C4738104D93"
 	},
     "AuditFunctions":[
         {
@@ -48,14 +48,15 @@
 		{
 			"Section":"TransportRule",
 			"Cmdlet":"Get-TransportRule",
-			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","SentToScope","MessageTypeMatches","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
+			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","SentToScope","MessageTypeMatches","RedirectMessageTo","SetSCL","SenderIpRanges","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
 				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
 				{"Name":"SentToScopeString", "Expression":"$_.SentToScope -join ','"},
 				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
 				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
 				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"},
-				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"}
+				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"},
+				{"Name":"SenderIpRangesString","Expression":"$_.SenderIpRanges -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"On-Premises"
@@ -63,14 +64,15 @@
 		{
 			"Section":"TransportRule",
 			"Cmdlet":"Get-TransportRule",
-			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
+			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","SentToScope","MessageTypeMatches","RedirectMessageTo","SetSCL","SenderIpRanges","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
 				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
 				{"Name":"SentToScopeString", "Expression":"$_.SentToScope -join ','"},
 				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
 				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
 				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"},
-				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"}
+				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"},
+				{"Name":"SenderIpRangesString","Expression":"$_.SenderIpRanges -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"Online"
