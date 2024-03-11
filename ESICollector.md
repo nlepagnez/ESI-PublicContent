@@ -62,9 +62,9 @@ Microsoft Graph Permissions :
 
 Exchange Online permissions :
 
-  > The collector has to have Exchange.ManageAsApp permission to be able to connect to Exchange
+  > The collector has to have Exchange.ManageAsApp permission to be able to connect to Exchange. [learn more](https://learn.microsoft.com/en-us/powershell/exchange/app-only-auth-powershell-v2?view=exchange-ps)
 
-  > The collector must be Global Reader at minimum to be able to read Exchange Online configuration. This permission has to assigned manually after Managed account creation.
+  > The collector must be **Global Reader** or **Security Reader** at minimum to be able to read Exchange Online configuration. This permission has to assigned manually after Managed account creation. [learn more on available roles for ManagedAsApp permission](https://learn.microsoft.com/en-us/powershell/exchange/app-only-auth-powershell-v2?view=exchange-ps#assign-microsoft-entra-roles-to-the-application)
 
 USD Logs (Summary of logs of the Collector) :
 
