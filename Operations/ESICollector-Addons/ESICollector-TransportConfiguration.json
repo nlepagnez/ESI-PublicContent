@@ -1,10 +1,14 @@
 {
     "SolutionMetadata":
 	{
-		"JSonVersion":"1.0",
-		"JsonUpdateDate":"27/09/2022",
+		"JSonVersion":"1.2",
+		"JsonUpdateDate":"25/02/2024",
 		"Description":"All Audit Functions around Transport configuration",
 		"VersionInformation":{
+			"1.2":{
+				"Tracking":["We add HostedOutboundSpamFilterPolicy and HostedOutboundSpamFilterRule sections and we modify TransportRule section"],
+				"MigrationMessageFromLastVersion":"Add HostedOutboundSpamFilterPolicy and HostedOutboundSpamFilterRule sections and replace TransportRule section"
+			},
 			"1.1":{
 				"Tracking":["We change how to process TransportRule information"],
 				"MigrationMessageFromLastVersion":"Replace TransportRule section"
@@ -17,7 +21,7 @@
 	},
 	"AuditFunctionProtectedArea":
 	{
-		"ContentCheckSum":"57E4827098C5900E831117375B8E7188C2E82752C49FD79EDB09A3D9D0762F1B"
+		"ContentCheckSum":"74851CC1347273FFF9D3621537E499CCA06D92E58FE8F46DE2205C4738104D93"
 	},
     "AuditFunctions":[
         {
@@ -44,12 +48,15 @@
 		{
 			"Section":"TransportRule",
 			"Cmdlet":"Get-TransportRule",
-			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
+			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","SentToScope","MessageTypeMatches","RedirectMessageTo","SetSCL","SenderIpRanges","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
 				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
+				{"Name":"SentToScopeString", "Expression":"$_.SentToScope -join ','"},
 				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
 				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
-				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"}
+				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"},
+				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"},
+				{"Name":"SenderIpRangesString","Expression":"$_.SenderIpRanges -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"On-Premises"
@@ -57,12 +64,15 @@
 		{
 			"Section":"TransportRule",
 			"Cmdlet":"Get-TransportRule",
-			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","RedirectMessageTo","State","Mode","Priority","WhenChanged"],
+			"PropertySelection":["Identity","SentTo","BlindCopyTo","CopyTo","SentToScope","MessageTypeMatches","RedirectMessageTo","SetSCL","SenderIpRanges","State","Mode","Priority","WhenChanged"],
 			"CustomExpressionForSelection":[
 				{"Name":"SentToString", "Expression":"$_.SentTo -join ','"},
+				{"Name":"SentToScopeString", "Expression":"$_.SentToScope -join ','"},
 				{"Name":"BlindCopyToString","Expression":"$_.BlindCopyTo -join ','"},
 				{"Name":"CopyToString","Expression":"$_.CopyTo -join ','"},
-				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"}
+				{"Name":"RedirectMessageToString","Expression":"$_.RedirectMessageTo -join ','"},
+				{"Name":"MessageTypeMatchesString","Expression":"$_.MessageTypeMatches -join ','"},
+				{"Name":"SenderIpRangesString","Expression":"$_.SenderIpRanges -join ','"}
 			],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"Online"
@@ -106,6 +116,20 @@
 			"Section":"OutBoundC",
 			"Cmdlet":"Get-OutboundConnector | select *",
 			"PropertySelection":["Name","Enabled","UseMXRecord","Comment","ConnectorType","ConnectorSource","RecipientDomains","SmartHosts","TlsDomain","TlsSettings","IsTransportRuleScoped","RouteAllMessagesViaOnPremises","CloudServicesMailEnabled","AllAcceptedDomains","SenderRewritingEnabled","TestMode","LinkForModifiedConnector","ValidationRecipients","IsValidated","LastValidationTimestamp","AdminDisplayName","ExchangeVersion","Identity","WhenChanged","WhenCreated"],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"Online"
+		},
+		{
+			"Section":"HostedOutboundSpamFilterPolicy",
+			"Cmdlet":"Get-HostedOutboundSpamFilterPolicy | select *",
+			"PropertySelection":["*"],
+			"ProcessPerServer":"false",
+			"ProcessingCategory":"Online"
+		},
+		{
+			"Section":"HostedOutboundSpamFilterRule",
+			"Cmdlet":"Get-HostedOutboundSpamFilterRule | select *",
+			"PropertySelection":["*"],
 			"ProcessPerServer":"false",
 			"ProcessingCategory":"Online"
 		}

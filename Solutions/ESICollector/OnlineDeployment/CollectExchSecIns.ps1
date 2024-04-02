@@ -27,6 +27,14 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
 
+    Version : 7.6.0.0 - Released : 02/04/2024 - nilepagn
+        - Adding possibility of storing USD logs in a storage instead of displaying them in the console
+        - Adding a level of logs to display in the console
+        - Adding a security when a Guid is given as TenantName to force column as String instead of Guid (PublicContent #9)
+        - Correct a bug on downloading Beta Add-ons from Runbooks
+        - Update how to calculate IsRunbook variable
+        - Update Add-Ons Update system to operate in UTF8 no BOM without NewLine at the end of file
+
     Version : 7.5.2.2 - Released : 05/11/2023 - nilepagn
         - Correct a bug when Parallelisation is disabled and a PerServer function is called.
 
@@ -189,7 +197,7 @@ Param (
     [switch] $IsOutsideAzureAutomation
 )
 
-$ESICollectorCurrentVersion = "7.5.2.2"
+$ESICollectorCurrentVersion = "7.6.0.0"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 $Script:SupportedConfigurationVersion = "2.4"
@@ -911,9 +919,9 @@ $Script:SupportedConfigurationVersion = "2.4"
             else 
             { 
                 if ($Global:InstanceName -ne "Default") {
-                    $JSNToSave | Set-Content ((Split-Path $outputpath) + "\DateTracking-$($Global:InstanceName).esi")
+                    $JSNToSave | Set-ESIContent ((Split-Path $outputpath) + "\DateTracking-$($Global:InstanceName).esi")
                 }
-                else { $JSNToSave | Set-Content ((Split-Path $outputpath) + "\DateTracking.esi") }
+                else { $JSNToSave | Set-ESIContent ((Split-Path $outputpath) + "\DateTracking.esi") }
             }
         }
     }
@@ -939,8 +947,10 @@ $Script:SupportedConfigurationVersion = "2.4"
         $line = "$(Get-Date -f 'yyyy/MM/dd HH:mm:ss')`t$Level`t$Category`t$Message"
         Set-Variable -Name UDSLogs  -Value "$UDSLogs`n$line" -Scope Script
         if($NoOutput -or $Global:DeactivateWriteOutput){
-            Write-Host $line
             if ($script:FASTVerboseLevel) { Write-Verbose $line }
+            else{
+                Write-Host $line
+            }
         }else{
             Write-Output $line
         }
@@ -961,12 +971,227 @@ $Script:SupportedConfigurationVersion = "2.4"
         }    
     }
 
+    function Set-ESIContent{
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory=$true, ValueFromPipeline=$true) ]
+            [string]
+            $Content,
+            [Parameter(Mandatory=$true)]
+            [string]
+            $Path
+        )
+    
+        if ($PSVersionTable.PSVersion.Major -ge 7)
+        {
+            # PowerShell 7 and higher
+            $Content | Set-Content -Path $Path -NoNewline -Encoding utf8NoBOM
+        }
+        else
+        {
+            # Powershell 5.1
+            $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
+            #[System.IO.File]::WriteAllLines($Path, $Content, $Utf8NoBomEncoding) Prefer WriteAllText as it doesn't add newline at the end of the file
+            [System.IO.File]::WriteAllText($Path, $Content, $Utf8NoBomEncoding)
+        }
+    }
+
     function Get-UDSLogs
     {
         [CmdletBinding()]
         param()
 
         return $Script:UDSLogs
+    }
+
+    function Invoke-UDSLogProcessor
+    {
+        $LogProcessorOutput = "`n`n**** UDS Log Processor ****"
+        if ($script:DeactivateUDSLogs)
+        {
+            $LogProcessorOutput += "`nLogs deactivated"
+        }
+        else {
+            if ($script:UDSLogControl)
+            {
+                $LogProcessorOutput += "`nUDS Log Control activated"
+                if ($null -eq $Script:UDSLogProcessor -or $Script:UDSLogProcessor.Count -eq 0)
+                {
+                    $LogProcessorOutput += "`nNo processor defined"
+                }
+                else {
+                    $LogProcessorOutput += "`n$($Script:UDSLogProcessor.Count) UDS Processor(s) defined"
+                }
+            }
+            else {
+                $LogProcessorOutput += "`nUDS Log Control deactivated"
+
+                $OutputProcessor = @{
+                    LogStorageType = "Output"
+                }
+
+                $LogProcessorOutput += "`nAdd Output processor"
+
+                $Script:UDSLogProcessor = @($OutputProcessor)
+            }
+
+            foreach($ProcessorEntry in $Script:UDSLogProcessor)
+            {
+                
+                try {
+                    $LogProcessorOutput += "`nInvoke processor $($ProcessorEntry.LogStorageType)"
+                    switch($ProcessorEntry.LogStorageType)
+                    {
+                        "Output"
+                        {
+                            $LogProcessorOutput += "`n**************** LOGS **********************"
+                            $LogProcessorOutput += Get-UDSLogs
+                            $LogProcessorOutput += "`n**************** END LOGS **********************`n"
+                        }
+                        "File"
+                        {
+                            if ($Global:isRunbook)
+                            {
+                                $LogProcessorOutput += "`nUDS File processor not available in Runbook"
+                            }
+                            else {
+                                if ([System.IO.Path]::IsPathRooted($ProcessorEntry.LogStoragePath))
+                                {
+                                    $UDSLogPath = $ProcessorEntry.LogStoragePath
+                                }
+                                else
+                                {
+                                    $UDSLogPath = $Script:scriptFolder + "\" + $ProcessorEntry.LogStoragePath
+                                }
+                                
+                                if (-not (Test-Path $UDSLogPath))
+                                {
+                                    $LogProcessorOutput += "`nCreate folder $UDSLogPath"
+                                    New-Item -ItemType Directory -Path $UDSLogPath
+                                }
+
+                                CleanFiles -ScriptLogPath $UDSLogPath -ClearFilesOlderThan $ProcessorEntry.LogStorageRetentionDays
+
+                                # Generate Filename using Prefix, ScriptInstanceID and Date
+                                $UDSLogFileName = "$($ProcessorEntry.Prefix)-$($Script:ScriptInstanceID)-$(Get-Date -f 'yyyyMMdd').log"
+
+                                $LogProcessorOutput += "`nWrite logs to $UDSLogPath\$UDSLogFileName"
+                                $UDSLogs | Out-File -FilePath "$UDSLogPath\$UDSLogFileName"
+                            }
+                        }
+                        "AzureStorageAccount"
+                        {
+                            $ExecutionImpossible = $false
+                            if (-not (Get-Module -Name Az.Storage -ListAvailable))
+                            {
+                                $LogProcessorOutput += "`nUDS Azure Storage Account module not available"
+                                $ExecutionImpossible = $true
+                            }
+                            elseif (-not (Get-Command -Name Connect-AzAccount -Module Az.Accounts -ErrorAction SilentlyContinue))
+                            {
+                                $LogProcessorOutput += "`nUDS Azure Storage Account module not available"
+                                $ExecutionImpossible = $true
+                            }
+
+                            if (-not $Global:isRunbook)
+                            {
+                                if ($ProcessorEntry.ConnectionType -like "ManagedIdentity")
+                                {
+                                    $LogProcessorOutput += "`nUDS Azure Storage Account Managed Identity not available"
+                                    $ExecutionImpossible = $true
+                                }
+                            }
+                            
+                            if (-not $ExecutionImpossible)
+                            {                            
+                                try
+                                {
+                                    switch ($ProcessorEntry.ConnexionType) {
+                                        "ManagedIdentity" { 
+                                            # BEGIN: Authenticate with Managed Identity
+                                            $ResultAccount = Connect-AzAccount -Identity -Tenant $ProcessorEntry.TenantID
+                                            # END: Authenticate with Managed Identity
+                                        }
+                                        "Certificate" { 
+                                            # BEGIN: Authenticate with Certificate
+                                            $ResultAccount = Connect-AzAccount -CertificateThumbprint $ProcessorEntry.CertificateThumbprint -ApplicationId $ProcessorEntry.ApplicationID -Tenant $ProcessorEntry.TenantId -ServicePrincipal
+                                            # END: Authenticate with Certificate
+                                        }
+                                        Default 
+                                        {   
+                                            $LogProcessorOutput += "`nNAuthentication type $($ProcessorEntry.ConnexionType) not implemented yet"
+                                            Throw "nAuthentication type $($ProcessorEntry.ConnexionType) not implemented yet"
+                                        }
+                                    }
+
+                                    if ($null -eq $ResultAccount)
+                                    {
+                                        Throw "Impossible to authenticate to Azure Storage Account"
+                                    }
+                                    else {
+                                        $LogProcessorOutput += "`nUDS Azure Storage Account processor authenticated"
+                                    }
+
+                                    
+                                    # BEGIN: Create a new blob client
+                                    $context = New-AzStorageContext -StorageAccountName $ProcessorEntry.StorageAccountName -UseConnectedAccount
+                                    # END: Create a new blob client
+
+                                    # BEGIN: Create a new container if it doesn't exist
+                                    $container = Get-AzStorageContainer -Context $context -Name $ProcessorEntry.StorageBlobContainer
+                                    if ($null -eq $container) {
+                                        $container = New-AzStorageContainer -Name $ProcessorEntry.StorageBlobContainer -Context $context
+                                    }
+                                    # END: Create a new container if it doesn't exist
+
+                                    # BEGIN: Create a new blob and upload the logs
+                                    if ($null -ne $ProcessorEntry.Prefix)
+                                    {
+                                        $blobName = "$($ProcessorEntry.Prefix)-$($Script:ScriptInstanceID)-$(Get-Date -f 'yyyyMMdd').log"
+                                    }
+                                    else
+                                    {
+                                        $blobName = "$($Script:ScriptInstanceID)-$(Get-Date -f 'yyyyMMdd').log"
+                                    }
+
+                                    $Filename = "$($env:TEMP)\$blobName"
+                                    Set-ESIContent -Path $Filename -Content (Get-UDSLogs)
+                                    Set-AzStorageBlobContent -File $Filename -Container $container.Name -Blob $blobName -Context $context
+                                    
+                                    Remove-Item $Filename -ErrorAction SilentlyContinue
+                                    
+                                    $LogProcessorOutput += "`nUDS Logs written to Azure Storage Account: $($ProcessorEntry.StorageAccountName) - Container: $($ProcessorEntry.StorageBlobContainer) - Blob: $blobName"
+                                }
+                                catch {
+                                    $LogProcessorOutput += "`nError during UDS Azure Storage Account processor"
+                                    $LogProcessorOutput += "`n$($_.Exception.Message) - $($_.Exception.ItemName) - $($_.Exception.InvocationInfo.PositionMessage) - $($_.Exception.InvocationInfo.ScriptLineNumber) - $($_.Exception.InvocationInfo.OffsetInLine) - $($_.Exception.InvocationInfo.Line)"
+                                    Write-Warning "Error during UDS Azure Storage Account processor"
+                                    Write-Warning "$($_.Exception.Message) - $($_.Exception.ItemName) - $($_.Exception.InvocationInfo.PositionMessage) - $($_.Exception.InvocationInfo.ScriptLineNumber) - $($_.Exception.InvocationInfo.OffsetInLine) - $($_.Exception.InvocationInfo.Line)"
+                                }
+                            }
+                            else {
+                                $LogProcessorOutput += "`nUDS Azure Storage Account processor not executed, missing PS Module or bad context"
+                            }
+                        }
+                        Default
+                        {
+                            $LogProcessorOutput += "`nUnknown processor type"
+                        }
+                    }
+                }
+                catch {
+                    $LogProcessorOutput += "`nError during processor $($ProcessorEntry.LogStorageType)"
+                    $LogProcessorOutput += "`n$($_.Exception.Message)"
+                    Write-Warning "Error during UDS processor $($ProcessorEntry.LogStorageType)"
+                    Write-Warning "$($_.Exception.Message)"
+                }
+                
+            }
+        }
+
+        $LogProcessorOutput += "`n**** END UDS Log Processor ****"
+
+        return $LogProcessorOutput
     }
 
     function CleanFiles
@@ -1022,6 +1247,26 @@ $Script:SupportedConfigurationVersion = "2.4"
 #endregion Log and file Management
 
 #region Sentinel Upload Management
+
+    function Invoke-ESIWebRequest
+    {
+        Param(
+            $Uri
+        )
+
+        $object = $null
+
+        if ($script:Useproxy)
+        {
+            $object = (Invoke-WebRequest -Uri $Uri -UseBasicParsing -Proxy $Script:ProxyUrl).Content
+        }
+        else
+        {
+            $object = (Invoke-WebRequest -Uri $Uri -UseBasicParsing).Content
+        }
+
+        return $object
+    }
 
     function Get-OutputOptions
     {
@@ -2711,6 +2956,42 @@ $Script:SupportedConfigurationVersion = "2.4"
 
 #region Configuration Loading
 
+    function Check-ScriptUpdate
+    {
+        $script:VersionNotToDate = $false
+
+        if ($script:UpdateVersionCheckingDeactivated) 
+        { 
+            Write-LogMessage "Update Version Checking Deactivated" -Level Information 
+        }
+        
+        $CurrentVersion = $ESICollectorCurrentVersion
+        
+        [int] $InternalVersionCurentFile = $CurrentVersion -replace "\.",""
+        if ($InternalVersionCurentFile -lt 1000) {
+            $InternalVersionCurentFile = $InternalVersionCurentFile * 10
+        }
+
+        try {
+            $VersionTracking = Invoke-ESIWebRequest -Uri "https://aka.ms/ESICollectorVersionVerification"
+
+            $VersionTracking = $VersionTracking | ConvertFrom-Json
+
+            [int] $InternalTargetVersion = $VersionTracking.LatestVersion -replace "\.",""
+
+            if ($InternalTargetVersion -gt $InternalVersionCurentFile) {
+                $script:VersionNotToDateMessage = "Current version : $CurrentVersion - New version : $($VersionTracking.LatestVersion)"
+                Write-LogMessage "********** New version of the script available. $($script:VersionNotToDateMessage)" -Level Warning
+                $script:VersionNotToDate = $true
+            }
+
+        }
+        catch {
+            Write-LogMessage "Unable to get version tracking file from https://aka.ms/ESICollectorVersionVerification. Exception $($_.Exception); Fatal Error" -Level Error
+            return $null
+        }
+    }
+
     function LoadConfiguration 
     {
         Param (
@@ -2761,6 +3042,16 @@ $Script:SupportedConfigurationVersion = "2.4"
             if (-not [String]::IsNullOrEmpty($script:TenantName) -and [String]::IsNullOrEmpty($Script:ESIEnvironmentIdentification))
             {
                 $Script:ESIEnvironmentIdentification = $script:TenantName
+            }
+
+            # Verify that $Script:ESIEnvironmentIdentification is not a GUID. If it's the case, add "GUID-" at the beginning of the string
+            $testGuid = [System.Guid]::Empty
+            if
+            (
+                [Guid]::TryParse($Script:ESIEnvironmentIdentification, [ref]$testGuid)
+            )
+            {
+                $Script:ESIEnvironmentIdentification = "GUID-" + $Script:ESIEnvironmentIdentification
             }
 
             if (($VariableFromAzureAutomation -or $Script:ESIProcessingType -like "Online") -and ($Script:ParallelProcessPerServer -or $Script:GlobalParallelProcess))
@@ -2842,6 +3133,14 @@ $Script:SupportedConfigurationVersion = "2.4"
                 $script:Useproxy = $false
             }
 
+            if (-not [string]::IsNullOrEmpty($jsonConfig.Advanced.UpdateVersionCheckingDeactivated)) 
+            {   
+                $Script:UpdateVersionCheckingDeactivated = [Convert]::ToBoolean($jsonConfig.Advanced.UpdateVersionCheckingDeactivated)
+            }
+            else { $Script:UpdateVersionCheckingDeactivated = $false }
+
+            
+
             if ($null -eq $jsonConfig.Advanced.MaximalSentinelPacketSizeMb) {
                 $script:MaximalSentinelPacketSizeMb = 31.9
             } 
@@ -2871,6 +3170,60 @@ $Script:SupportedConfigurationVersion = "2.4"
                     [int] $Script:PaginationErrorThreshold = $jsonConfig.Advanced.PaginationErrorThreshold
                 }
             }
+
+            if ($null -ne $jsonConfig.Advanced.LogVerboseActivated)
+            {
+                $script:FASTVerboseLevel = [Convert]::ToBoolean($jsonConfig.Advanced.LogVerboseActivated)
+            }
+            else {$script:FASTVerboseLevel = $true}
+
+            if ($null -ne $jsonConfig.Advanced.DeactivateUDSLogs)
+            {
+                $script:DeactivateUDSLogs = [Convert]::ToBoolean($jsonConfig.Advanced.DeactivateUDSLogs)
+            }
+            else {$script:DeactivateUDSLogs = $false}
+
+            if ($null -ne $jsonConfig.Advanced.UDSLogProcessor)
+            {
+                $script:UDSLogControl = $true
+                $script:UDSLogProcessor = @()
+                foreach ($entry in $jsonConfig.Advanced.UDSLogProcessor)
+                {
+                    if ([Convert]::ToBoolean($Entry.Activated))
+                    {
+                        $LogStorageEntry = New-Object PSObject
+                        $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "LogStorageType" -Value $entry.StorageType
+                        $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "LogStoragePath" -Value $entry.StoragePath
+                        if (-not [String]::IsNullOrEmpty($entry.LogStorageRetentionDays)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "LogStorageRetentionDays" -Value ([Convert]::ToInt32($entry.LogStorageRetentionDays)) }
+                        else { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "LogStorageRetentionDays" -Value 30 }
+
+                        $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "Prefix" -Value $entry.Prefix
+                        $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "StorageURL" -Value $entry.StorageURL
+
+
+                        if (-not [String]::IsNullOrEmpty($entry.StorageAccountName)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "StorageAccountName" -Value $entry.StorageAccountName }
+                        if (-not [String]::IsNullOrEmpty($entry.StorageBlobContainer)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "StorageBlobContainer" -Value $entry.StorageBlobContainer }
+                        if (-not [String]::IsNullOrEmpty($entry.ConnexionType)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "ConnexionType" -Value $entry.ConnexionType }
+                        
+                        if ($entry.ConnexionType -like "Certificate")
+                        {
+                            if ([String]::IsNullOrEmpty($entry.TenantId) -or [String]::IsNullOrEmpty($entry.ApplicationID) -or [String]::IsNullOrEmpty($entry.ApplicationID))
+                            {
+                                Write-LogMessage -Message "Certificate connexion type selected but missing information. Impossible to continue" -Level Error
+                                throw "Certificate connexion type selected but missing information. Impossible to continue"
+                            }
+
+                            if (-not [String]::IsNullOrEmpty($entry.TenantId)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "TenantId" -Value $entry.TenantId }
+                            if (-not [String]::IsNullOrEmpty($entry.ApplicationID)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "ApplicationID" -Value $entry.ApplicationID }
+                            if (-not [String]::IsNullOrEmpty($entry.CertificateThumbprint)) { $LogStorageEntry | Add-Member -MemberType NoteProperty -Name "CertificateThumbprint" -Value $entry.CertificateThumbprint }
+                        }
+
+                        $script:UDSLogProcessor += $LogStorageEntry
+                    }
+                    
+                }
+            }
+            else {$script:UDSLogControl = $false}
 
 
             if ($null -ne $jsonConfig.MGGraphAPIConnection) {
@@ -3001,7 +3354,7 @@ $Script:SupportedConfigurationVersion = "2.4"
         }
         catch
         {
-            Write-LogMessage -Message "Impossible to process configuration " + $_.Exception -Level Error
+            Write-LogMessage -Message "Impossible to process configuration - Exception: $($_.Exception.Message) `n StackTrace: $($_.ScriptStackTrace) `n PositionMessage: $($_.InvocationInfo.PositionMessage)" -Level Error
             throw $_
         }
     }
@@ -3124,7 +3477,7 @@ $Script:SupportedConfigurationVersion = "2.4"
             if ($CacheEmpty) 
             {
                 Write-LogMessage -Message "Update Cache Content" -NoOutput; 
-                $WebResult.Content | Set-Content -Path ($ScriptAddonCachePath + "ESIChecksumFiles.json")
+                $WebResult.Content | Set-ESIContent -Path ($ScriptAddonCachePath + "ESIChecksumFiles.json")
                 $OnlineFiles = $WebResult.Content | ConvertFrom-Json
 
                 # Add all file in the list
@@ -3145,7 +3498,7 @@ $Script:SupportedConfigurationVersion = "2.4"
                         Write-LogMessage -Message "Impossible to retrieve file $($OnlineFile.FileName) from Online Github. Error : $($_.Exception)" -NoOutput -Level Warning; 
                         Throw "Impossible to load Audit Functions, Critical for collection. Error :" + $_
                     }
-                    $WebResult.Content | Set-Content -Path ($ScriptAddonCachePath + $OnlineFile.FileName)
+                    $WebResult.Content | Set-ESIContent -Path ($ScriptAddonCachePath + $OnlineFile.FileName)
                 }
             }
 
@@ -3166,7 +3519,7 @@ $Script:SupportedConfigurationVersion = "2.4"
 
         # Process in Memory without storage
         # Retrieve File Checksum list
-        $GithubSourcePath = "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons/"
+        $GithubSourcePath = "https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/ESICollector-Addons"
         
         if ($Beta)
         {
@@ -3232,7 +3585,7 @@ $Script:SupportedConfigurationVersion = "2.4"
 
             if ($FileToIgnore) {continue;}
             
-            $uri = $GithubSourcePath + $OnlineFile.FileName
+            $uri = "$GithubSourcePath/$($OnlineFile.FileName)"
             try {
                 if ($Useproxy)
                 {
@@ -3459,7 +3812,8 @@ $Global:isRunbook = if (-not $IsOutsideAzureAutomation)
     {
         if (!($null -eq (Get-Command "Get-AutomationVariable" -ErrorAction SilentlyContinue)))
         {
-            if ($null -eq (Get-Module -Name Orchestrator* -ErrorAction SilentlyContinue))
+            $TestVariable = Get-AutomationVariable -Name TenantName -ErrorAction SilentlyContinue
+            if ($null -eq (Get-Module -Name Orchestrator* -ErrorAction SilentlyContinue) -and $null -eq $TestVariable)
             {
                 $false
             }
@@ -3477,6 +3831,7 @@ $script:GGroupArray=@{}
 $Script:Results = @{}
 $Script:Results["Default"] = @()
 $Global:InjectionTest = @()
+$Script:UDSLogs = $null
 
 # Force TLS1.2 to make sure we can download from HTTPS
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -3501,11 +3856,13 @@ try {
     LoadConfiguration -configurationFile $JSONFileCondiguration -VariableFromAzureAutomation:$Global:isRunbook -InstanceName $InstanceName -ReceivedTenantName $ReceivedTenantName -ErrorAction Stop
 }
 catch {
-    Write-LogMessage -Message "Configuration not loaded. Impossible to continue."
+    Write-LogMessage -Message "Configuration not loaded. Impossible to continue - Exception: $($_.Exception.Message) `n StackTrace: $($_.ScriptStackTrace) `n PositionMessage: $($_.InvocationInfo.PositionMessage)"
     if (-not $Global:isRunbook ) { Stop-Transcript }
-    throw "Fatal Error, unable to continue"
+    throw "Fatal Error, unable to continue - Exception: $($_.Exception.Message) `n StackTrace: $($_.ScriptStackTrace) `n PositionMessage: $($_.InvocationInfo.PositionMessage)"
     return -1
 }
+
+Check-ScriptUpdate
 
 $ScriptInstanceID = ([Guid]::NewGuid()).Guid
 Write-LogMessage -Message "Launching Exchange Configuration Collector Script, with ID $ScriptInstanceID for Instance $InstanceName on date $DateSuffix"
@@ -3701,10 +4058,14 @@ if (-not $NoDateTracing)
     Set-CurrentLaunchTime -DateSuffix $Script:DateSuffix -Save
 }
 
-Write-LogMessage -Message ("Exchange Configuration Collector script finished")
-Write-Output "`n**************** LOGS **********************"
-Write-Output (Get-UDSLogs)
-Write-Output "**************** END LOGS **********************`n"
+Write-LogMessage -Message ("Exchange Configuration Collector script finished`n`n")
+Write-Output (Invoke-UDSLogProcessor)
+
+if ($Script:VersionNotToDate)
+{
+    Write-LogMessage "********** New version of the script available. $Script:VersionNotToDateMessage)" -Level Warning
+}
+
 $end = Get-Date
 Write-LogMessage -Message "Execution done. Time elapsed: $(($end-$start).TotalSeconds)s"
 Write-LogMessage -Message "Execution done. Time elapsed: $(($end-$start).TotalSeconds)s" -Level Warning
