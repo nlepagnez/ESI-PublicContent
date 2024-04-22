@@ -10,9 +10,19 @@ Parameters are described in the Configuration file. Explanation of the parameter
 
 ## Versioning
 
-## Actual Version : 7.5.2.2
+## Actual Version : 7.6.0.0
 
 ## Upgrade paths
+
+### From 7.5.2.1 to 7.5.2.2
+
+#### **Configuration File**
+
+Update Config File to the new version. Be carefull to keep your custom parameters.
+
+#### **ESI Collector Script**
+
+Replace the old script version with the new one. nothing to modifiy in the script.
 
 ### From 7.5.2.1 to 7.5.2.2
 
