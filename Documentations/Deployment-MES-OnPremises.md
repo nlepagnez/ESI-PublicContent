@@ -146,7 +146,7 @@ If you plan to collect information
 - Only on Exchange servers for Options 1-2-5-6-7, the agent needs to be deployed on Exchange servers
 - For Options 3-4, the agent needs to be deployed on Exchange servers. These options are still on Beta.
 
-1. **Download and install the agents needed to collect logs for Microsoft Sentinel**. **Deploy Monitor Agents**
+##### **Download and install the agents needed to collect logs for Microsoft Sentinel**. **Deploy Monitor Agents**
    1. This step is required only if it's the first time you onboard your Exchange Servers/Domain Controllers
    2. Select which agent you want to install in your servers to collect logs:
         1.[Prefered] Azure Monitor Agent via Azure Arc. Deploy the Azure Arc Agent
@@ -159,5 +159,40 @@ If you plan to collect information
            4. Clickclick on Download Windows Agent (64 bit)
             ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image11.png)
 
+##### Deploy log injestion for Option 1  -  MS Exchange Management Log collection
+Select how to stream MS Exchange Admin Audit event logs
+###### *Data Collection Rules - When Azure Monitor Agent is used**
+Microsoft Exchange Admin Audit Events logs are collected only from Windows agents.
+Two options : 
+    Option 1 - Azure Resource Manager (ARM) Template
+    1. Click the [Deploy to Azure button below](https://portal.azure.com/#create/Microsoft.Template)
+    2. Select the preferred Subscription, Resource Group and Location.
+    3. Enter the Workspace Name 'and/or Other required fields'.
+        1. Mark the checkbox labeled I agree to the terms and conditions stated above.
+    4. Click Purchase to deploy
+    Option 2 - Manual Deployment of Azure Automation
+    Use the following step-by-step instructions to deploy manually a Data Collection Rule
+    1. From the Azure Portal, navigate to Azure Data collection rules.
+    2. Click + Create at the top.
+    3. In the Basics tab, fill the required fields, Select Windows as platform type and give a name to the DCR.
+    4. In the Resources tab, enter you Exchange Servers.
+    5. In 'Collect and deliver', add a Data Source type 'Windows Event logs' and select 'Custom' option, enter 'MS Exchange Management' as expression and Add it.
+    6. 'Make other preferable configuration changes', if needed, then click Create.
+
+**Assign the DCR to all Exchange Servers**
+1. Add all your Exchange Servers to the DCR
 
 
+###### Data Collection Rules - When the legacy Azure Log Analytics Agent is used
+Configure the logs to be collected - Configure the Events you want to collect and their severities.
+1. Go the **Log Analytics workspace for your Sentinel**
+2. Click on workspace Legacy agents management
+3. Select Windows Event logs
+4. Click Add Windows event log
+5. Enter MS Exchange Management as log name
+6. Collect Error, Warning and Information types
+7. Click Apply
+
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image12.png)
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image13.png)
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
