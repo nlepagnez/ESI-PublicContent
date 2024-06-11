@@ -23,6 +23,8 @@ Actual Parameter version : 2.5
 
 ## Parameters
 
+Parameters can be found in the "CollectExchSecConfiguration.json" file for On-Premises deployment or the "GlobalConfiguration" variable for Runbook deployment.
+
 ### Global
 
 | Parameter | Type | Description | Default | Required |
