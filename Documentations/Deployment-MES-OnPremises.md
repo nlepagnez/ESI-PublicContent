@@ -112,7 +112,7 @@ There are two to deploy this option :
 - Using the Legacy Agent :[Agent](https://go.microsoft.com/fwlink/?LinkId=828603. Remember that the Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024)
 - Using Azure Monitor Agent using AzureArc.[azure-monitor-agent-migration](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration)
 
-## Deploy Connector for Option 1 - 2 - 3 - 4 - 5 - 
+## Deploy Connector for Option 1 - 2 - 3 - 4 - 5 
 
 1.	Go to Data connectors in the configuration section
 2.	Select Exchange Security Insights On-Premise Collector
@@ -192,7 +192,6 @@ Configure the logs to be collected - Configure the Events you want to collect an
 5. Enter MS Exchange Management as log name
 6. Collect Error, Warning and Information types
 7. Click Apply
-
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image12.png)
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image13.png)
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
