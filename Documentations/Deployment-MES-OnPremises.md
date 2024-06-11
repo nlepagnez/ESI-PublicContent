@@ -13,8 +13,17 @@
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image02.png "Wait")
 
+#### Options deployment
+Remember that this solution is built in Options.
+As we do not want to force you to deploy all the capabilities provided with this solution, we choose to divide them in something we decided to call Options.
+All Options are **optional** except for the Option 0.
+The Option 0 refer to the script that collect Security information in your Exchange Organization and download the Result in Sentinel.
+For more information, for other options please refer to the blog or to the readme located here :
+https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/help-protect-your-exchange-environment-with-microsoft-sentinel/ba-p/3872527
+https://github.com/nlepagnez/ESI-PublicContent/tree/main
 
-## Deploy Connector
+
+## Deploy Connector for Option 0
 
 1.	Go to Data connectors in the configuration section
 2.	Select Exchange Security Insights On-Premise Collector
@@ -39,7 +48,13 @@ NOTE: This data connector depends on a parser based on a Kusto Function to work 
 *Manual Parsers deployment (to review)*
 *Section to complete*
 
+
 #### Script Deployment
+Option 0 is necessary for the Workbook : 
+- Microsoft Exchange Security Review
+- Microsoft Exchange Least Privilege with RBAC
+
+
 Install the ESI Collector Script on a server with Exchange Admin PowerShell console
 This is the script that will collect Exchange Information to push content in Microsoft Sentinel.
 
@@ -84,3 +99,21 @@ You need to follow this section only if :
 The script needs to be scheduled to send Exchange configuration to Microsoft Sentinel.
 We recommend to schedule the script once a day.
 The account used to launch the Script needs to be member of the group **Organization Management**
+
+#### Exchange Admin Audits also refer as Option 1
+Option 1 is necessary for the Workbook : 
+- Microsoft Exchange Admin Activity
+- Microsoft Exchange Search AdminAuditLog
+
+This option will upload the log "MSExchange Management" for each Exchange Server in Sentinel.
+There are two to deploy this option :
+- Using the Legacy Agent : https://go.microsoft.com/fwlink/?LinkId=828603. Temember that the Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024
+- Using Azure Monitor Agent using AzureArc. https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration
+
+## Deploy Connector for Option 1
+
+1.	Go to Data connectors in the configuration section
+2.	Select Exchange Security Insights On-Premise Collector
+3.	Click on Open connector page
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image10.png "Connector Deployment")
+
