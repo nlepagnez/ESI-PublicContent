@@ -21,3 +21,11 @@
 3.	Click on Open connector page
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image03.png "Connector Deployment")
+
+### Prerequisites
+To integrate with Exchange Security Insights On-Premise Collector make sure you have:
+
+✅ Workspace: read and write permissions are required.
+✅ Keys: read permissions to shared keys for the workspace are required. See the documentation to learn more about workspace keys.
+
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image03.png) Service Account with Organization Management role: The service Account that launch the script as scheduled task needs to be Organization Management to be able to retrieve all the needed security Information.
