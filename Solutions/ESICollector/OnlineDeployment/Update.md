@@ -7,7 +7,7 @@
     - [Configuration update](#configuration-update)
   - [On-Premises Script Manual Update -- For On-Premises Deployment](#on-premises-script-manual-update----for-on-premises-deployment)
     - [Script update](#script-update)
-    - [Configuration update](#configuration-update)
+    - [Script Configuration update](#script-configuration-update)
   - [Install ESI Collector Updater](#install-esi-collector-updater)
 
 ## Overview
@@ -52,7 +52,7 @@ If you are running the ESI Collector as a scheduled script on a VM or server, yo
 2. Replace the existing PS1 scripts with the new version of the ESI Collector found in the downloaded ZIP (CollectExchSecIns.ps1, setup.ps1, Updater.ps1).
 3. Test the updated script to ensure that it is working correctly.
 
-### Configuration update
+### Script Configuration update
 
 After updating the script, you may need to update the configuration settings if needed to add new features or fix issues. The configuration can be found in the Config\CollectExchSecConfiguration.json file.
 
