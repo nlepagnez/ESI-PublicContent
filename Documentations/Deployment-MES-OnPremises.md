@@ -8,3 +8,16 @@
 5.	Click Install
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image01.png "Install Solution")
+
+6.	Wait for the end of the installation
+
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image02.png "Wait")
+
+
+## Deploy Connector
+
+1.	Go to Data connectors in the configuration section
+2.	Select Exchange Security Insights On-Premise Collector
+3.	Click on Open connector page
+
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image03.png "Connector Deployment")
