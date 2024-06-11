@@ -79,8 +79,8 @@ Result
 
 **Schedule the ESI Collector Script**
 You need to follow this section only if :
-- If not done by the the script failed to created to scheduled taks due to lack of permission 
-- or if you ignored the option during installation)
+- Not done by the  script because it failed to created to scheduled tasks due to lack of permission 
+
 The script needs to be scheduled to send Exchange configuration to Microsoft Sentinel.
 We recommend to schedule the script once a day.
 The account used to launch the Script needs to be member of the group **Organization Management**
