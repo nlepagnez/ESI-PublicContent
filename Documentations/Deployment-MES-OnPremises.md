@@ -186,10 +186,10 @@ Two options :
 ###### Data Collection Rules - When the legacy Azure Log Analytics Agent is used
 Configure the logs to be collected - Configure the Events you want to collect and their severities.
 1. Go the **Log Analytics workspace for your Sentinel**
-2. Click on workspace Legacy agents management
-3. Select Windows Event logs
-4. Click Add Windows event log
-5. Enter MS Exchange Management as log name
-6. Collect Error, Warning and Information types
-7. Click Apply
+2. Click **Legacy agents management**
+3. Select **Windows Event logs**
+4. Click **Add Windows event log**
+5. Enter **MS Exchange Managemen**t as log name
+6. Collect **Error**, **Warning** and **Information** types
+7. Click **Apply**
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
