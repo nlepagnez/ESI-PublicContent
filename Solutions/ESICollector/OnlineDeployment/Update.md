@@ -1,9 +1,12 @@
-# ESI COllector - Online Update
+# ESI Collector - Update
 
-- [ESI COllector - Online Update](#esi-collector---online-update)
+- [ESI Collector - Update](#esi-collector---update)
   - [Overview](#overview)
-  - [Azure Automation Manual Update](#azure-automation-manual-update)
+  - [Azure Automation Manual Update -- For Runbook Deployment](#azure-automation-manual-update----for-runbook-deployment)
     - [Runbook update](#runbook-update)
+    - [Configuration update](#configuration-update)
+  - [On-Premises Script Manual Update -- For On-Premises Deployment](#on-premises-script-manual-update----for-on-premises-deployment)
+    - [Script update](#script-update)
     - [Configuration update](#configuration-update)
   - [Install ESI Collector Updater](#install-esi-collector-updater)
 
@@ -11,7 +14,7 @@
 
 The ESI Collector is a PowerShell script that collects security-related data from Exchange Online and sends it to a Log Analytics workspace. The script is designed to be run as a scheduled task and can be configured to collect data at different intervals.
 
-## Azure Automation Manual Update
+## Azure Automation Manual Update -- For Runbook Deployment
 
 ### Runbook update
 
@@ -35,6 +38,29 @@ To update the configuration settings:
 
 1. Open the Automation account in the Azure portal.
 2. Navigate to the "Variables" section and select the GlobalConfiguration variable.
+3. Update the configuration settings as needed.
+4. Save the changes.
+5. Test the updated script to ensure that it is working correctly.
+
+## On-Premises Script Manual Update -- For On-Premises Deployment
+
+### Script update
+
+If you are running the ESI Collector as a scheduled script on a VM or server, you can update the script by following these steps:
+
+1. Download the latest version of the ESI Collector script (CollectExchSecIns.zip) from the [GitHub repository](https://github.com/nlepagnez/ESI-PublicContent/tree/main/Solutions/ESICollector).
+2. Replace the existing PS1 scripts with the new version of the ESI Collector found in the downloaded ZIP (CollectExchSecIns.ps1, setup.ps1, Updater.ps1).
+3. Test the updated script to ensure that it is working correctly.
+
+### Configuration update
+
+After updating the script, you may need to update the configuration settings if needed to add new features or fix issues. The configuration can be found in the Config\CollectExchSecConfiguration.json file.
+
+The new version of the ESI Collector may introduce new configuration settings or change the existing ones. You can find the new configuration settings in GitHub repository or in the release notes : [GitHub repository](https://github.com/nlepagnez/ESI-PublicContent/tree/main/Solutions/ESICollector).
+
+To update the configuration settings:
+
+1. Open the CollectExchSecConfiguration.json file.
 3. Update the configuration settings as needed.
 4. Save the changes.
 5. Test the updated script to ensure that it is working correctly.
