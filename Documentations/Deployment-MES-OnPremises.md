@@ -192,6 +192,4 @@ Configure the logs to be collected - Configure the Events you want to collect an
 5. Enter MS Exchange Management as log name
 6. Collect Error, Warning and Information types
 7. Click Apply
-   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image12.png)
-   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image13.png)
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
