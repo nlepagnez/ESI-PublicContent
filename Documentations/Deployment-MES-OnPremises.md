@@ -30,4 +30,4 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 ✅ Keys: read permissions to shared keys for the workspace are required. See the documentation to learn more about workspace keys
 
 
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image04.png) Service Account with Organization Management role: The service Account that launch the script as scheduled task needs to be Organization Management to be able to retrieve all the needed security Information.
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image04.png) ℹ️ Service Account with Organization Management role: The service Account that launch the script as scheduled task needs to be Organization Management to be able to retrieve all the needed security Information.
