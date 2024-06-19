@@ -88,8 +88,8 @@ List of workbook based on this connector :
 * Microsoft Exchange Search AdminAuditLog - Online
 
 ### Documentations
-In order to deploy the solution, you can find documentation in the folder : [Documentations]https://github.com/nlepagnez/ESI-PublicContent/tree/main/Documentations
-[Deployment Microsoft Exchange Security for Exchange Online](/Documentations/Deployment-MES-Online.md)
-[Exchange Security Insights On-Premise/Online Collector](/Documentations/ESICollector.md)
+In order to deploy the solution, you can find documentation in the folder : [Documentations](/Documentations/)
+* [Deployment Microsoft Exchange Security for Exchange Online](/Documentations/Deployment-MES-Online.md)
+* [Exchange Security Insights On-Premise/Online Collector](/Documentations/ESICollector.md)
 
 
