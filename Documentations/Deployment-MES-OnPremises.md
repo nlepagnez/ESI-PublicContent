@@ -24,7 +24,7 @@ https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/help-protect-your
 https://github.com/nlepagnez/ESI-PublicContent/tree/main
 
 
-## Deploy Connector for Option 0
+## Deploy Mandatory Connector : Exchange Security Insights On-Premise Collector
 
 1.	Go to Data connectors in the configuration section
 2.	Select Exchange Security Insights On-Premise Collector
@@ -102,6 +102,8 @@ The script needs to be scheduled to send Exchange configuration to Microsoft Sen
 We recommend to schedule the script once a day.
 The account used to launch the Script needs to be member of the group **Organization Management**
 
+## Deploy Optional Connector : Microsoft Exchange Logs and Events
+
 #### Exchange Admin Audits also refer as Option 1
 Option 1 is necessary for the Workbook : 
 - Microsoft Exchange Admin Activity
@@ -115,7 +117,7 @@ There are two to deploy this option :
 ## Deploy Connector for Option 1 - 2 - 3 - 4 - 5 
 
 1.	Go to Data connectors in the configuration section
-2.	Select Exchange Security Insights On-Premise Collector
+2.	Select Microsoft Exchange Logs and Events
 3.	Click on Open connector page
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image10.png "Connector Deployment")
 
