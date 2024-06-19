@@ -32,7 +32,7 @@ Connector  brief description :
       - This connectors is **Mandatory**
       - A script deployed on an On-Premises device, will  collect Security informations configuration from Exchange Servers and send them to Sentinel
       - This connector has functions that help displayed useful information in Workbooks
-
+#### Workbooks
 List of workbook based on this connector :
     - Microsoft Exchange Security Review
     - Microsoft Exchange Least Privilege with RBAC
@@ -57,6 +57,11 @@ List of workbook based on this connectors :
 - Microsoft Exchange Admin Activity :  **Require Option 1** (upload of the MS Exchange Management log)
 - Microsoft Exchange Search AdminAuditLog : **Require Option 1 **(upload of the MS Exchange Management log)
 
+### Documentations
+In order to deploy the solution, you can find documentation in the folder : [Documentations]https://github.com/nlepagnez/ESI-PublicContent/tree/main/Documentations
+[Deployment Microsoft Exchange Security for Exchange On-Premises](/Documentations/Deployment-MES-OnPremises.md)
+[Exchange Security Insights On-Premise/Online Collector](/Documentations/ESICollector.md)
+
 ## Microsoft Exchange Security for Exchange Online
 
 ### DATA Collection
@@ -80,5 +85,9 @@ List of workbook based on this connector :
     - Microsoft Exchange Least Privilege with RBAC - Online
     - Microsoft Exchange Admin Activity - Online
     - Microsoft Exchange Search AdminAuditLog - Online
+### Documentations
+In order to deploy the solution, you can find documentation in the folder : [Documentations]https://github.com/nlepagnez/ESI-PublicContent/tree/main/Documentations
+[Deployment Microsoft Exchange Security for Exchange Online](/Documentations/Deployment-MES-Online.md)
+[Exchange Security Insights On-Premise/Online Collector](/Documentations/ESICollector.md)
 
-[Exchange Security Insights On-Premise/Online Collector](ESICollector.md)
+
