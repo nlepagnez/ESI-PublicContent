@@ -29,33 +29,33 @@ The collection is based on two connectors :
 #### Exchange Security Insights On-Premise Collector
 
 Connector  brief description :
-      - This connectors is **Mandatory**
-      - A script deployed on an On-Premises device, will  collect Security informations configuration from Exchange Servers and send them to Sentinel
-      - This connector has functions that help displayed useful information in Workbooks
+* This connectors is **Mandatory**
+* A script deployed on an On-Premises device, will  collect Security informations configuration from Exchange Servers and send them to Sentinel
+* This connector has functions that help displayed useful information in Workbooks
 #### Workbooks
 List of workbook based on this connector :
-    - Microsoft Exchange Security Review
-    - Microsoft Exchange Least Privilege with RBAC
+* Microsoft Exchange Security Review
+* Microsoft Exchange Least Privilege with RBAC
 
 #### Microsoft Exchange Logs and Events
 Connector  brief description : 
-    - This is **optional**
-    - This connector allow you to collect the following information :
-      - Option 1 : Exchange Audit Log : This option collects MS Exchange Manahement logs (retrieved from the Event Viewer) for every Exchange servers using Azure Monitor Agent or Azure Log Analytics agent on each Exchange Server. This content is used to analyze Admin activities on your On-Premises Exchange environment(s)
-      - Option 2 : Security/Application/System logs from all Exchange servers
-      - Option 3 : Security logs for DC located in Exchange AD site
-      - Option 4 : Security logs for all DC
-      - Option 5 : IIS logs for all Exchange servers
-      - Option 6 : Message Tracking logs for all Exchange servers
-      - Option 7 : HTTPProxy logs for all Exchange Servers
+* This is **optional**
+* This connector allow you to collect the following information :
+    * Option 1 : Exchange Audit Log : This option collects MS Exchange Manahement logs (retrieved from the Event Viewer) for every Exchange servers using Azure Monitor Agent or Azure Log Analytics agent on each Exchange Server. This content is used to analyze Admin activities on your On-Premises Exchange environment(s)
+    * Option 2 : Security/Application/System logs from all Exchange servers
+    * Option 3 : Security logs for DC located in Exchange AD site
+    * Option 4 : Security logs for all DC
+    * Option 5 : IIS logs for all Exchange servers
+    * Option 6 : Message Tracking logs for all Exchange servers
+    * Option 7 : HTTPProxy logs for all Exchange Servers
 
 All options are **optional**. It is your call to decide which information you want to collect.
 Indeed, some options can have imply a **huge amount** of uploaded data. ex: IIS log, Messsage Tracking, HTTP Proxy logs. You need to think carefully before select these logs. However, remember that these will be very useful for detection and forensic.
 
 #### Workbook
 List of workbook based on this connectors :
-- Microsoft Exchange Admin Activity :  **Require Option 1** (upload of the MS Exchange Management log)
-- Microsoft Exchange Search AdminAuditLog : **Require Option 1 **(upload of the MS Exchange Management log)
+* Microsoft Exchange Admin Activity :  **Require Option 1** (upload of the MS Exchange Management log)
+* Microsoft Exchange Search AdminAuditLog : **Require Option 1 **(upload of the MS Exchange Management log)
 
 ### Documentations
 In order to deploy the solution, you can find documentation in the folder : [Documentations]https://github.com/nlepagnez/ESI-PublicContent/tree/main/Documentations
@@ -69,22 +69,24 @@ In order to deploy the solution, you can find documentation in the folder : [Doc
 We build the solution to give you the possibility to collect multiple logs and configurations reports following your needs and the quantity of logs you want to upload to Microsoft Sentinel.
 
 The collection is based on one connector and one other solution:
-    - Data connector : 
-      - Exchange Security Insights Online Collector (using Azure Functions)
-      - This connector come with our solution Microsoft Exchange Security for Exchange Online
-    - Solution : Microsoft 365
+* Data connector : 
+    * Exchange Security Insights Online Collector (using Azure Functions)
+    * This connector come with our solution Microsoft Exchange Security for Exchange Online
+* Solution : Microsoft 365
  
 #### Exchange Security Insights Online Collector (using Azure Functions)
-Connector  brief description : 
-      - This connectors is **Mandatory**
-      - A script deployed using an Azure Automarion, will  collect Security informations configuration from Exchange Online and send them to Sentinel
-      - This connector has functions that help displayed useful information in Workbooks
+Connector  brief description :
+* This connectors is **Mandatory**
+* A script deployed using an Azure Automarion, will  collect Security informations configuration from Exchange Online and send them to Sentinel
+* This connector has functions that help displayed useful information in Workbooks
+
 ### Workbooks
 List of workbook based on this connector :
-    - Microsoft Exchange Security Review - Online
-    - Microsoft Exchange Least Privilege with RBAC - Online
-    - Microsoft Exchange Admin Activity - Online
-    - Microsoft Exchange Search AdminAuditLog - Online
+* Microsoft Exchange Security Review - Online
+* Microsoft Exchange Least Privilege with RBAC - Online
+* Microsoft Exchange Admin Activity - Online
+* Microsoft Exchange Search AdminAuditLog - Online
+
 ### Documentations
 In order to deploy the solution, you can find documentation in the folder : [Documentations]https://github.com/nlepagnez/ESI-PublicContent/tree/main/Documentations
 [Deployment Microsoft Exchange Security for Exchange Online](/Documentations/Deployment-MES-Online.md)
