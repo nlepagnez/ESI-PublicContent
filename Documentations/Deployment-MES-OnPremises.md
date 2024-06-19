@@ -62,7 +62,7 @@ This is the script that will collect Exchange Information to push content in Mic
 
 
 **Download the latest version of ESI Collector**
-The latest version can be found here : https://aka.ms/ESI-ExchangeCollector-Script.
+The latest version can be found here : https://aka.ms/ESI-ExchangeCollector-Script
 Choose CollectExchSecIns.zip (This is the latest version of the script)
 
 **On the serveur that will run the collect**
@@ -103,16 +103,6 @@ We recommend to schedule the script once a day.
 The account used to launch the Script needs to be member of the group **Organization Management**
 
 ## Deploy Optional Connector : Microsoft Exchange Logs and Events
-
-#### Exchange Admin Audits also refer as Option 1
-Option 1 is necessary for the Workbook : 
-- Microsoft Exchange Admin Activity
-- Microsoft Exchange Search AdminAuditLog
-
-This option will upload the log "MSExchange Management" for each Exchange Server in Sentinel.
-There are two to deploy this option :
-- Using the Legacy Agent :[Agent](https://go.microsoft.com/fwlink/?LinkId=828603. Remember that the Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024)
-- Using Azure Monitor Agent using AzureArc.[azure-monitor-agent-migration](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration)
 
 ## Deploy Connector for Option 1 - 2 - 3 - 4 - 5 
 
@@ -195,3 +185,13 @@ Configure the logs to be collected - Configure the Events you want to collect an
 6. Collect **Error**, **Warning** and **Information** types
 7. Click **Apply**
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
+
+#### Exchange Admin Audits also refer as Option 1
+Option 1 is necessary for the Workbook : 
+- Microsoft Exchange Admin Activity
+- Microsoft Exchange Search AdminAuditLog
+
+This option will upload the log "MSExchange Management" for each Exchange Server in Sentinel.
+There are two to deploy this option :
+- Using the Legacy Agent :[Agent](https://go.microsoft.com/fwlink/?LinkId=828603. Remember that the Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024)
+- Using Azure Monitor Agent using AzureArc.[azure-monitor-agent-migration](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration)
