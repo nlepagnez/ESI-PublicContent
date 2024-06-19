@@ -55,7 +55,7 @@ Indeed, some options can have imply a **huge amount** of uploaded data. ex: IIS 
 #### Workbook
 List of workbook based on this connectors :
 * Microsoft Exchange Admin Activity :  **Require Option 1** (upload of the MS Exchange Management log)
-* Microsoft Exchange Search AdminAuditLog : **Require Option 1 **(upload of the MS Exchange Management log)
+* Microsoft Exchange Search AdminAuditLog : **Require Option 1 ** (upload of the MS Exchange Management log)
 
 ### Documentations
 In order to deploy the solution, you can find documentation in the folder : [Documentations](/Documentations/)
