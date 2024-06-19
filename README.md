@@ -28,7 +28,7 @@ The collection is based on two connectors :
 
 #### Exchange Security Insights On-Premise Collector
 
-Connector  brief description : 
+Connector  brief description :
       - This connectors is **Mandatory**
       - A script deployed on an On-Premises device, will  collect Security informations configuration from Exchange Servers and send them to Sentinel
       - This connector has functions that help displayed useful information in Workbooks
