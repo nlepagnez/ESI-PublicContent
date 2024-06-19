@@ -5,14 +5,14 @@
 Introducing **M**icrosoft **E**xchange **S**ecurity Solution
 
 We built two Sentinel solutions :
- - **Microsoft Exchange Security for Exchange On-Premises**
- - **Microsoft Exchange Security for Exchnage Online**
+* **Microsoft Exchange Security for Exchange On-Premises**
+* **Microsoft Exchange Security for Exchnage Online**
 
 Both solution collects and detects sensitive security operations happening on On-Premises Exchange Servers and Exchange Online using Microsoft Sentinel. This allows service owners and SOC teams to :
-    - Detect unsecure configurations
-    - Detect to attacks targeting Exchange Servers
-    - Alert on sensitive administrative operations
-    - Report on incorrect RBAC configurations putting the environment at risk
+* Detect unsecure configurations
+* Detect to attacks targeting Exchange Servers
+* Alert on sensitive administrative operations
+* Report on incorrect RBAC configurations putting the environment at risk
 
 The solution also allows hunters to search a very diverse set of data to find abnormal behaviors.
 
@@ -23,8 +23,8 @@ The solution also allows hunters to search a very diverse set of data to find ab
 We build the solution to give you the possibility to collect multiple logs and configurations reports following your needs and the quantity of logs you want to upload to Microsoft Sentinel.
 
 The collection is based on two connectors :
-    - Exchange Security Insights On-Premise Collector
-    - Microsoft Exchange Logs and Events
+* Exchange Security Insights On-Premise Collector
+* Microsoft Exchange Logs and Events
 
 #### Exchange Security Insights On-Premise Collector
 
@@ -39,7 +39,7 @@ List of workbook based on this connector :
 
 #### Microsoft Exchange Logs and Events
 Connector  brief description : 
-* This is **optional**
+* This connector is **Optional**
 * This connector allow you to collect the following information :
     * Option 1 : Exchange Audit Log : This option collects MS Exchange Manahement logs (retrieved from the Event Viewer) for every Exchange servers using Azure Monitor Agent or Azure Log Analytics agent on each Exchange Server. This content is used to analyze Admin activities on your On-Premises Exchange environment(s)
     * Option 2 : Security/Application/System logs from all Exchange servers
