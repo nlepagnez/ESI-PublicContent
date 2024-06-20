@@ -44,6 +44,13 @@ List of workbook based on this connector :
 * Microsoft Exchange Security Review
 * Microsoft Exchange Least Privilege with RBAC
 
+#### VIP management
+A watchlist per solution is created.
+Fill it with the name of your VIP.
+These watchlist help track activities on VIP in the Workbook :
+* Microsoft Exchange Admin Activity
+* Microsoft Exchange Admin Activity - Online
+
 #### Microsoft Exchange Logs and Events - Data Collector - Optional
 
 Connector  brief description :

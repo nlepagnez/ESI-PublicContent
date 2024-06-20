@@ -14,8 +14,8 @@ https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Deployme
 ## Collectors Information
 https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/ESICollector.md
 
-## How to deploy Woorkbooks (in Progess)
+## How to deploy Woorkbooks
 https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/WorkbookDeployement.md
 
-## VIP Management (in Progess)
+## VIP Management
 https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/VIPManagement.md
