@@ -70,7 +70,7 @@ If you choose to use the information provide in the Connector page :
 2. Select Exchange Security Insights On-Premise Collector
 3. Click on Open connector page
 
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image03.png "Connector Deployment")
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png "Connector Deployment")
 
 ### Prerequisites
 
@@ -96,7 +96,7 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 > * ExchangeEnvironmentList
 > * MESCheckVIP
 
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png)
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image16.png)
 
 > More detailed information on Parsers can be found in the following documentation
 [Parser information](https://github.com/nlepagnez/Azure-Sentinel/blob/master/Solutions/Microsoft%20Exchange%20Security%20-%20Exchange%20On-Premises/Parsers/README.md)
