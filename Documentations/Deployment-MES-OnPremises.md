@@ -169,7 +169,10 @@ This file can be found in the **Config** folder. This folder is located in the f
 This connector is used to collect additionals logs :
 * MS Exchange Management logs from the Event Viewer
 * Security,Application, System for Exchange Servers
-* 
+* Security for Domain controllers located in the Exchange AD site
+* IIS logs for Exchange servers
+* Message tracking logs for Exchange Servers
+* HTTPProcy logs for Exchange servers
 
 ## Configuration of the optional Data Connector : Microsoft Exchange Logs and Events
 
