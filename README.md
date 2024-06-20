@@ -80,7 +80,7 @@ In order to deploy the solution, you can find documentation in the folder : [Doc
 
 ### DATA Collection
 
-We build the solution to give you the ability to collect security configuration from Exchange Online and to displayed useful information based on the Micorosft 365 logs(Office365 Activity).
+We build the solution to give you the ability to collect security configuration from Exchange Online and to displayed useful information based on the Micorosft 365 logs (Office365 Activity).
 
 The collection is based on one connector and one additonal solution:
 
