@@ -12,6 +12,22 @@
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image02.png "Wait")
 
+**The solution will deploy :**
+
+* Two connectors
+  * Exchange Security Insights On-Premise Collector
+  * Microsoft Exchange Logs and Events
+* 4 Functions also called Parsers
+  * ExchangeAdminAuditLogs
+  * ExchangeConfiguration
+  * ExchangeEnvironmentList
+  * MESCheckVIP
+* 4 Workbooks template
+  * Microsoft Exchange Admin Activity
+  * Microsoft Exchange Least Privilege with RBAC
+  * Microsoft Exchange Search AdminAuditLog
+  * Microsoft Exchange Security Review
+
 ## Options deployment
 
 Remember, this solution is based on one mandadoty data connector and one optionnal.
@@ -72,7 +88,7 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 
 #### Parser deployment
 
-NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
+>NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
 List of Parsers that will be automatically deployed :
 
 * ExchangeAdminAuditLogs
@@ -119,55 +135,85 @@ The script Steip.ps1 will automatically deploy all the required configurations.
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image07.png)
    4. Fill all the required information required by the script
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image08.png)
-   5. Enter the **name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
+   5. Enter the **Name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
    6. By default, choose '**Def'** as Default analysis. 
    7. Choose **OP** for On-Premises
    8. If necessary, update the path for the location of **Exchange BIN path**
    9. Enter the **time when you want** the script to run (format : hh:mmAM or hh:mmPM):
    10. Specify the **account** and its password that will be used to run the script in the Scheduled Task (**Remember this account needs to be part of the Organization Management group**)
 
-Result
+**Here the scheduled task, after the script completion**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image09.png)
 
-
 **Schedule the ESI Collector Script**
-You need to follow this section only if :
-- Not done by the  script because it failed to created to scheduled tasks due to lack of permission 
+You need to follow this section only if the script failed due to lack of permission
+Steps :
 
-The script needs to be scheduled to send Exchange configuration to Microsoft Sentinel.
-We recommend to schedule the script once a day.
+1. Create a Scheluled task
+2. Specify the account
+3. Set the schedule
+4. Set the script
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image17.png)
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image18.png)
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image19.png)
+
 The account used to launch the Script needs to be member of the group **Organization Management**
+
+##### Find the information configured by the scripts
+
+The script will create the Scheluded tasks and fill a configuration file named **CollectExchSecConfiguration.json** with all the provided information.
+This file can be found in the **Config** folder. This folder is located in the folder where you unzip the zip.
 
 ## Deploy Optional Connector : Microsoft Exchange Logs and Events
 
-## Deploy Connector for Option 1 - 2 - 3 - 4 - 5 
+This connector is used to collect additionals logs :
+* MS Exchange Management logs from the Event Viewer
+* Security,Application, System for Exchange Servers
+* 
 
-1.	Go to Data connectors in the configuration section
-2.	Select Microsoft Exchange Logs and Events
-3.	Click on Open connector page
+## Configuration of the optional Data Connector : Microsoft Exchange Logs and Events
+
+For details on how to configure this connector, you have two possibilities
+
+1. Go to the Connector Page and follow the steps
+2. Follow this documentation
+
+> We strongly recommended to follow this documentation as the information are more often updated and more detailed.
+
+If you choose to use the information provide in the Connector page :
+
+1. Go to Data connectors in the configuration section
+2. Select Exchange Security Insights On-Premise Collector
+3. Click on Open connector page
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image10.png "Connector Deployment")
 
 ### Prerequisites
+
 To integrate with Exchange Security Insights On-Premise Collector make sure you have:
 
 ✅ **Workspace:** read and write permissions are required
 
 ✅ **Keys:** read permissions to shared keys for the workspace are required. See the documentation to learn more about workspace keys
 
-
- ℹ️ Service Account with Organization Management role: The service Account that launch the script as scheduled task needs to be Organization Management to be able to retrieve all the needed security Information.
+> The connector page is useful to retrieve the Worspace ID and the Key.
 
 ### Configuration
 
 #### Parser deployment 
-**(When using Microsoft Exchange Security Solution, Parsers are automatically deployed)**
-NOTE: This data connector depends on a parser based on a Kusto Function to work as expected. Follow the steps for each Parser to create the Kusto Functions alias : ExchangeAdminAuditLogs and ExchangeEnvironmentList
+> NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
+List of Parsers that will be automatically deployed :
 
-*Manual Parsers deployment (to review)*
-*Section to complete*
+* ExchangeAdminAuditLogs
+* ExchangeConfiguration
+* ExchangeEnvironmentList
+* MESCheckVIP
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png)
 
+> More detailed information on Parsers can be found in the following documentation
+[Parser information](/Documentations/ParserInformation.md)
 
 #### Agent Deployment
+
 This section needs to be be executed only once per server.
 The agent is used to collect Event log like MSExchange Management, Security logs...
 If you plan to collect information 
@@ -188,8 +234,11 @@ If you plan to collect information
             ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image11.png)
 
 ##### Deploy log injestion for Option 1  -  MS Exchange Management Log collection
+
 Select how to stream MS Exchange Admin Audit event logs
+
 ###### *Data Collection Rules - When Azure Monitor Agent is used**
+
 Microsoft Exchange Admin Audit Events logs are collected only from Windows agents.
 Two options : 
     Option 1 - Azure Resource Manager (ARM) Template
