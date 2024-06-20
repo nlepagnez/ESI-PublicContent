@@ -176,12 +176,14 @@ This file can be found in the **Config** folder. This folder is located in the f
 ## Deploy Optional Connector : Microsoft Exchange Logs and Events
 
 This connector is used to collect additionals logs :
-* MS Exchange Management logs from the Event Viewer
-* Security,Application, System for Exchange Servers
-* Security for Domain controllers located in the Exchange AD site
-* IIS logs for Exchange servers
-* Message tracking logs for Exchange Servers
-* HTTPProcy logs for Exchange servers
+
+* MS Exchange Management logs from the Event Viewer : Also called Option 1
+* Security, Application, System for Exchange Servers : Also called Option 2
+* Security for Domain controllers located in the Exchange AD sites : Also called Option 3
+* Security for ALL Domain controllers : Also called Option 4
+* IIS logs for Exchange servers : Also called Option 5
+* Message tracking logs for Exchange Servers : Also called Option 6
+* HTTPProcy logs for Exchange servers : Also called Option 7
 
 ## Configuration of the optional Data Connector : Microsoft Exchange Logs and Events
 
@@ -199,7 +201,7 @@ If you choose to use the information provide in the Connector page :
 3. Click on Open connector page
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image10.png "Connector Deployment")
 
-### Prerequisites
+## Prerequisites
 
 To integrate with Exchange Security Insights On-Premise Collector make sure you have:
 
@@ -209,9 +211,7 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 
 > The connector page is useful to retrieve the Worspace ID and the Key.
 
-### Configuration
-
-#### Parser deployment
+## Parser deployment
 
 > NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
 List of Parsers that will be automatically deployed :
@@ -226,72 +226,58 @@ List of Parsers that will be automatically deployed :
 > More detailed information on Parsers can be found in the following documentation
 [Parser information](https://github.com/nlepagnez/Azure-Sentinel/blob/master/Solutions/Microsoft%20Exchange%20Security%20-%20Exchange%20On-Premises/Parsers/README.md)
 
-#### Agent Deployment
+## Deployment considerations
+
+To ingest the events logs or log files, you have two options :
+
+* Use the legacy Agent : This agent will be depreceated in August 2024
+* Use Azure Arc and DCR : Recommanded solution
+
+## Legacy Agent Deployment
 
 This section needs to be be executed only once per server.
-The agent is used to collect Event log like MSExchange Management, Security logs...
+The agent is used to collect Event log like MSExchange Management, Security logs, IIS log files...
 If you plan to collect information: 
 
-* Only on Exchange servers for Options 1-2-5-6-7, the agent needs to be deployed on Exchange servers
-* For Options 3-4, the agent needs to be deployed on Exchange servers. These options are still on Beta.
+* For Options 1-2-5-6-7, the agent needs to be deployed on every Exchange servers
+* For Options 3, the agent needs to be deployed on Domains Controllers located in the Exchange AD sites. This option is still in Beta.
+* For Options 4, the agent needs to be deployed on ALL Domains Controllers. This option is still in Beta.
 
-##### **Download and install the agents needed to collect logs for Microsoft Sentinel**. **Deploy Monitor Agents*
-   1. This step is required only if it's the first time you onboard your Exchange Servers/Domain Controllers
-   2. Select which agent you want to install in your servers to collect logs:
-        1.[Prefered] Azure Monitor Agent via Azure Arc. Deploy the Azure Arc Agent
-           [Manage Azure Monitor Agent](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-manage?tabs=azure-portal&WT.mc_id=Portal-fx)
-        2. Install Azure Log Analytics Agent (Deprecated on 31/08/2024)
-           [Download the Azure Log Analytics Agent and choose the deployment method in the below link](https://go.microsoft.com/fwlink/?LinkId=828603)
-           1. Or go the **Log Analytics workspace for your Sentinel**
-           2. Select **Agents** in the **Settings** section
-           3. Extend the **Log Analytics Agent Instructions**
-           4. Clickclick on Download Windows Agent (64 bit)
-            ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image11.png)
+### **Download and install the agents needed to collect logs for Microsoft Sentinel**
 
-##### Deploy log injestion for Option 1  -  MS Exchange Management Log collection
+1. This step is required only if it's the first time you onboard your Exchange Servers/Domain Controllers
+2. Install Azure Log Analytics Agent (Deprecated on 31/08/2024)
+    [Download the Azure Log Analytics Agent and choose the deployment method in the below link](https://go.microsoft.com/fwlink/?LinkId=828603)
+   1. Or go the **Log Analytics workspace for your Sentinel**
+   2. Select **Agents** in the **Settings** section
+   3. Extend the **Log Analytics Agent Instructions**
+   4. Clickclick on Download Windows Agent (64 bit)
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image11.png)
 
-Select how to stream MS Exchange Admin Audit event logs
+### Deploy log injestion for Option 1  -  MS Exchange Management Log collection
 
-###### *Data Collection Rules - When Azure Monitor Agent is used**
+Option 1 is necessary for the following Workbooks :
 
-Microsoft Exchange Admin Audit Events logs are collected only from Windows agents.
-Two options : 
-    Option 1 - Azure Resource Manager (ARM) Template
-    1. Click the [Deploy to Azure button below](https://portal.azure.com/#create/Microsoft.Template)
-    2. Select the preferred Subscription, Resource Group and Location.
-    3. Enter the Workspace Name 'and/or Other required fields'.
-        1. Mark the checkbox labeled I agree to the terms and conditions stated above.
-    4. Click Purchase to deploy
-    Option 2 - Manual Deployment of Azure Automation
-    Use the following step-by-step instructions to deploy manually a Data Collection Rule
-    1. From the Azure Portal, navigate to Azure Data collection rules.
-    2. Click + Create at the top.
-    3. In the Basics tab, fill the required fields, Select Windows as platform type and give a name to the DCR.
-    4. In the Resources tab, enter you Exchange Servers.
-    5. In 'Collect and deliver', add a Data Source type 'Windows Event logs' and select 'Custom' option, enter 'MS Exchange Management' as expression and Add it.
-    6. 'Make other preferable configuration changes', if needed, then click Create.
+* Microsoft Exchange Admin Activity
+* Microsoft Exchange Search AdminAuditLog
 
-**Assign the DCR to all Exchange Servers**
-1. Add all your Exchange Servers to the DCR
-
-
-###### Data Collection Rules - When the legacy Azure Log Analytics Agent is used
 Configure the logs to be collected - Configure the Events you want to collect and their severities.
+
 1. Go the **Log Analytics workspace for your Sentinel**
 2. Click **Legacy agents management**
 3. Select **Windows Event logs**
 4. Click **Add Windows event log**
-5. Enter **MS Exchange Managemen**t as log name
+5. Enter **MS Exchange Management** as log name
 6. Collect **Error**, **Warning** and **Information** types
 7. Click **Apply**
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
 
-#### Exchange Admin Audits also refer as Option 1
-Option 1 is necessary for the Workbook : 
-- Microsoft Exchange Admin Activity
-- Microsoft Exchange Search AdminAuditLog
+All the Exchange Servers with the Agent installed will upload the MSExchange Management log
 
-This option will upload the log "MSExchange Management" for each Exchange Server in Sentinel.
-There are two to deploy this option :
-- Using the Legacy Agent :[Agent](https://go.microsoft.com/fwlink/?LinkId=828603. Remember that the Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024)
-- Using Azure Monitor Agent using AzureArc.[azure-monitor-agent-migration](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration)
+
+
+
+
+
+## Azure Arc and DCR Deployment
+
