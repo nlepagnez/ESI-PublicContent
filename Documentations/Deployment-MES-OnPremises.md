@@ -1,19 +1,19 @@
 # Deployment Microsoft Exchange Security for Exchange On-Premises
 
 ## Install the solution
-1.	In Microsoft Sentinel
-2.	Select Content Hub
-3.	In the search zone, type Microsoft exchange Security
-4.	Select Microsoft Exchange Security for Exchange On-Premises
-5.	Click Install
 
+1. In Microsoft Sentinel
+2. Select Content Hub
+3. In the search zone, type Microsoft exchange Security
+4. Select Microsoft Exchange Security for Exchange On-Premises
+5. Click Install
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image01.png "Install Solution")
-
-6.	Wait for the end of the installation
+6. Wait for the end of the installation
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image02.png "Wait")
 
-#### Options deployment
+### Options deployment
+
 Remember, this solution is based on options. This allows you to choose which data will be ingest as some options can generate a very high volume of data. Depending on what you want to collect, track in your Workbooks, Analytics Rules, Hunting capabilities you will choose the option(s) you will deploy. 
 Each options are independant for one from the other. To learn more about each option: 'Microsoft Exchange Security' wiki
 As we do not want to force you to deploy all the capabilities provided with this solution, we choose to divide them in something we decided to call Options.
@@ -23,51 +23,51 @@ For more information, for other options please refer to the blog or to the readm
 https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/help-protect-your-exchange-environment-with-microsoft-sentinel/ba-p/3872527
 https://github.com/nlepagnez/ESI-PublicContent/tree/main
 
-
 ## Deploy Mandatory Connector : Exchange Security Insights On-Premise Collector
 
-1.	Go to Data connectors in the configuration section
-2.	Select Exchange Security Insights On-Premise Collector
-3.	Click on Open connector page
+1. Go to Data connectors in the configuration section
+2. Select Exchange Security Insights On-Premise Collector
+3. Click on Open connector page
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image03.png "Connector Deployment")
 
 ### Prerequisites
+
 To integrate with Exchange Security Insights On-Premise Collector make sure you have:
 
 ✅ **Workspace:** read and write permissions are required
 
 ✅ **Keys:** read permissions to shared keys for the workspace are required. See the documentation to learn more about workspace keys
 
-
  ℹ️ Service Account with Organization Management role: The service Account that launch the script as scheduled task needs to be Organization Management to be able to retrieve all the needed security Information.
 
 ### Configuration
-#### Parser deployment 
+
+#### Parser deployment
+
 **(When using Microsoft Exchange Security Solution, Parsers are automatically deployed)**
 NOTE: This data connector depends on a parser based on a Kusto Function to work as expected. Follow the steps for each Parser to create the Kusto Functions alias : ExchangeConfiguration and ExchangeEnvironmentList
 
 *Manual Parsers deployment (to review)*
 *Section to complete*
 
-
 #### Script Deployment
-Option 0 is necessary for the Workbook : 
-- Microsoft Exchange Security Review
-- Microsoft Exchange Least Privilege with RBAC
 
+Option 0 is necessary for the Workbook : 
+* Microsoft Exchange Security Review
+* Microsoft Exchange Least Privilege with RBAC
 
 Install the ESI Collector Script on a server with Exchange Admin PowerShell console
 This is the script that will collect Exchange Information to push content in Microsoft Sentinel.
 
-
 **Download the latest version of ESI Collector**
-The latest version can be found here : https://aka.ms/ESI-ExchangeCollector-Script
+The latest version can be found here : <https://aka.ms/ESI-ExchangeCollector-Script>
 Choose CollectExchSecIns.zip (This is the latest version of the script)
 
 **On the serveur that will run the collect**
 *Remember that the server needs to have Exchange PowerShell Cmdlets*
-Remember that the 
+Remember to :
+
 1. **Copy and unzip** the file CollectExchSecIns.zip
 2. **Unblock** the PS1 Scripts
    1. Click right on each PS1 Script and go to Properties tab.
@@ -81,7 +81,7 @@ Remember that the
       1. To find the **Workspace ID and the Key**, go the **Log Analytics workspace for your Sentinel**
       2. Select **Agents** in the **Settings** section
       3. Extend the **Log Analytics Agent Instructions**
-      4. Retrieve the** Workspace ID and Primary Key**
+      4. Retrieve the **Workspace ID and Primary Key**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image07.png)
    1. Enter the **name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
    2. By default, choose '**Def'** as Default analysis. 
