@@ -159,10 +159,12 @@ Steps :
 2. Specify the account
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image17.png)
+
 3. Set the schedule
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image18.png)
-3. Set the script
+
+4. Set the script
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image19.png)
 
