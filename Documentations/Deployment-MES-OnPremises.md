@@ -325,9 +325,9 @@ There are 2 methods to deploy the DCR :
 
 #### Security logs
 1. Go the **Microsoft Exchange Logs and Events** data connector Page
-2. Extend the section **[Option 2] Security/Application/System logs of Exchange Servers / Security Event Log collection / Data Collection Rules- Security Logs
-3. Click Create Data collection Rule
-4. In **Basic** tabs, enter a **name** for the DCR
+2. Extend the section **[Option 2] Security/Application/System logs of Exchange Servers/Security Event Log collection / Data Collection Rules- Security Logs**
+3. Click **Create Data collection Rule**
+4. In **Basic** tabs, enter a **Name** for the DCR
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image36.png)
 5. Click **Resources** tab, click **+Add ressource(s)**
@@ -339,7 +339,7 @@ There are 2 methods to deploy the DCR :
 
 #### Application and System Event logs
 1. Go the **Microsoft Exchange Logs and Events** data connector Page
-2. Extend the section **[Option 2] Security/Application/System logs of Exchange Servers / Security Event Log collection / Data Collection Rules- Security Logs
+2. Extend the section **[Option 2] Security/Application/System logs of Exchange Servers / Security Event Log collection / Data Collection Rules- Security Logs**
 
 There are 2 methods to deploy the DCR :
 
@@ -377,18 +377,28 @@ There are 2 methods to deploy the DCR :
 3. Click **Settings / Resources**
 4. Select all Exchange Servers
 
-### Option 3 - Security for Domain controllers located in the Exchange AD sites
+### Option 3 and 4 Security logs of Domain Controllers 
+#### Security logs
+1. Go the **Microsoft Exchange Logs and Events** data connector Page
+2. Extend the section **[Option 3 and 4] Security logs of Domain Controllers/Security Event log collection/ Data Collection Rules- Security Logs**
+3. Click **Create Data collection Rule**
+4. In **Basic** tabs, enter a **Name** for the DCR
 
-
-### Option 4 - Security for ALL Domain controllers
-
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image36.png)
+5. Click **Resources** tab, click **+Add ressource(s)**
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image36.png)
+1. Depending on the Options:
+   1. Option 3 : Add only Domain Controllers for Exchange AD Sites
+   2. Option 4 : Add ALL Domain Controllers 
+2. Click **Next : Collect**
+3. In **Collect** tab, **Common** level is the minimum required. Please select **Common** or **All Security Events**
+4. Click **Review + Create**
 
 ### Option 5 - IIS logs for Exchange servers
 #### DCE Creation
 This option required a DCE (Data connection Endpoint).
 **This step needs do be only one time, for other DCR, you'll select this DCE.**
 There are 2 methods to deploy the DCE :
-
 
 1. Method 1 - Azure Resource Manager (ARM) Template. Use this method for automated deployment of the DCR
 
