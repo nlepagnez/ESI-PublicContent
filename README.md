@@ -87,7 +87,7 @@ The collection is based on one connector and one additonal solution:
 * Data connector : 
   * Exchange Security Insights Online Collector (using Azure Functions)
   * This connector come with our solution Microsoft Exchange Security for Exchange Online
-* Solution : Microsoft 365. Microsoft Solution that will transfer Office Activity logs in Sentinel for two workbooks
+* Solution : Microsoft 365. Microsoft Solution that will transfer Office Activity logs in Sentinel. Required for two workbooks
 
 #### Exchange Security Insights Online Collector (using Azure Functions)
 
