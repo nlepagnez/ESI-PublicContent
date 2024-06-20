@@ -22,3 +22,4 @@ To add workbook based on templates :
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image52.png)
 3. Click on a **Workbook**
 4. Click **Save** and choose the **Location**
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image53.png)
