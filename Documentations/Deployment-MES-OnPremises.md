@@ -137,8 +137,11 @@ The script Setup.ps1 will automatically deploy all the required configurations.
    4. Fill all the required information required by the script
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image08.png)
    5. Enter the **Name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization
-      1. This is a mandoatory information
-      2. Text information are only allower no GUID  
+      1. **This STEP is Critical**
+      2. The name can be String or a combination of String and Number Example :
+         1. Contoso
+         2. Consoto2024
+      3. GUID are not allowed
    6. By default, choose '**Def'** as Default analysis. 
    7. Choose **OP** for On-Premises
    8. If necessary, update the path for the location of **Exchange BIN path**
@@ -229,8 +232,7 @@ If you plan to collect information:
 * Only on Exchange servers for Options 1-2-5-6-7, the agent needs to be deployed on Exchange servers
 * For Options 3-4, the agent needs to be deployed on Exchange servers. These options are still on Beta.
 
-##### **Download and install the agents needed to collect logs for Microsoft Sentinel**. **Deploy Monitor Agents**
-
+##### **Download and install the agents needed to collect logs for Microsoft Sentinel**. **Deploy Monitor Agents*
    1. This step is required only if it's the first time you onboard your Exchange Servers/Domain Controllers
    2. Select which agent you want to install in your servers to collect logs:
         1.[Prefered] Azure Monitor Agent via Azure Arc. Deploy the Azure Arc Agent
