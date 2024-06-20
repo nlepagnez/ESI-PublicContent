@@ -12,18 +12,43 @@
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image02.png "Wait")
 
-### Options deployment
+## Options deployment
 
-Remember, this solution is based on options. This allows you to choose which data will be ingest as some options can generate a very high volume of data. Depending on what you want to collect, track in your Workbooks, Analytics Rules, Hunting capabilities you will choose the option(s) you will deploy. 
-Each options are independant for one from the other. To learn more about each option: 'Microsoft Exchange Security' wiki
+Remember, this solution is based on one mandadoty data connector and one optionnal.
+All the steps in the section Exchange Security Insights On-Premise Collector are mandatoty.
+
+For the step in the section Microsoft Exchange Logs and Events, you will have to choose which logs you want to ingest.
 As we do not want to force you to deploy all the capabilities provided with this solution, we choose to divide them in something we decided to call Options.
-All Options are **optional** except for the Option 0.
-The Option 0 refer to the script that collect Security information in your Exchange Organization and download the Result in Sentinel.
-For more information, for other options please refer to the blog or to the readme located here :
-https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/help-protect-your-exchange-environment-with-microsoft-sentinel/ba-p/3872527
-https://github.com/nlepagnez/ESI-PublicContent/tree/main
+After the solution installation, you will be able to choose which data will be ingest in Microsoft Sentinel.
+Indeed as some options can generate a very high volume of data, we let you choose which logs will be ingest.
+The choice depend on what :
 
-## Deploy Mandatory Connector : Exchange Security Insights On-Premise Collector
+* You want to collect
+* What workbook you want to used
+* Analytics Rules, Hunting capabilities you want to be able to use
+* Hunting capacities you want
+
+Each options are independant for one from the other.
+
+For more information, for other options please refer to the blog or to the readme located here :
+<https://techcommunity.microsoft.com/t5/microsoft-sentinel-blog/help-protect-your-exchange-environment-with-microsoft-sentinel/ba-p/3872527>
+<https://github.com/nlepagnez/ESI-PublicContent/tree/main>
+
+## Configuration of the Mandatory data Connector : Exchange Security Insights On-Premise Collector
+
+The configurations associated with this connector are mandatory and will be used by the following workbooks :
+
+* Microsoft Exchange Security Review
+* Microsoft Exchange Least Privilege with RBAC
+
+For details on how to configure this connector, you have two possibilities
+
+1. Go to the Connector Page and follow the steps
+2. Follow this documentation
+
+> We strongly recommended to follow this documentation as the information are more often updated and more detailed.
+
+If you choose to use the information provide in the Connector page :
 
 1. Go to Data connectors in the configuration section
 2. Select Exchange Security Insights On-Premise Collector
@@ -39,34 +64,43 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 
 ✅ **Keys:** read permissions to shared keys for the workspace are required. See the documentation to learn more about workspace keys
 
+> The connector page is useful to retrieve the Worspace ID and the Key.
+
  ℹ️ Service Account with Organization Management role: The service Account that launch the script as scheduled task needs to be Organization Management to be able to retrieve all the needed security Information.
 
 ### Configuration
 
 #### Parser deployment
 
-**(When using Microsoft Exchange Security Solution, Parsers are automatically deployed)**
-NOTE: This data connector depends on a parser based on a Kusto Function to work as expected. Follow the steps for each Parser to create the Kusto Functions alias : ExchangeConfiguration and ExchangeEnvironmentList
+NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
+List of Parsers that will be automatically deployed :
 
-*Manual Parsers deployment (to review)*
-*Section to complete*
+* ExchangeAdminAuditLogs
+* ExchangeConfiguration
+* ExchangeEnvironmentList
+* MESCheckVIP
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png)
+
+> More detailed information on Parsers can be found in the following documentation
+[Parser information](/Documentations/ParserInformation.md)
 
 #### Script Deployment
 
-Option 0 is necessary for the Workbook : 
-* Microsoft Exchange Security Review
-* Microsoft Exchange Least Privilege with RBAC
+This connector is based on a script that will run on an On-Premises servers (normally an Admin server).
 
-Install the ESI Collector Script on a server with Exchange Admin PowerShell console
-This is the script that will collect Exchange Information to push content in Microsoft Sentinel.
+Here the steps to deploy the script on this server.
+The script Steip.ps1 will automatically deploy all the required configurations.
 
-**Download the latest version of ESI Collector**
-The latest version can be found here : <https://aka.ms/ESI-ExchangeCollector-Script>
-Choose CollectExchSecIns.zip (This is the latest version of the script)
+##### Download the latest version of ESI Collector
 
-**On the serveur that will run the collect**
-*Remember that the server needs to have Exchange PowerShell Cmdlets*
-Remember to :
+* The latest version can be found here : <https://aka.ms/ESI-ExchangeCollector-Script>
+* Choose CollectExchSecIns.zip (This is the latest version of the script)
+* This is the script that will collect Exchange Information to push content in Microsoft Sentinel.
+* Install the ESI Collector Script on a server with Exchange Admin PowerShell console
+
+##### On the serveur that will run the collect
+
+> *Remember that the server needs to have Exchange PowerShell Cmdlets*
 
 1. **Copy and unzip** the file CollectExchSecIns.zip
 2. **Unblock** the PS1 Scripts
@@ -82,14 +116,24 @@ Remember to :
       2. Select **Agents** in the **Settings** section
       3. Extend the **Log Analytics Agent Instructions**
       4. Retrieve the **Workspace ID and Primary Key**
+
+```text
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image07.png)
-   1. Enter the **name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
-   2. By default, choose '**Def'** as Default analysis. 
-   3. Choose **OP** for On-Premises
-   4. If necessary, update the path for the location of **Exchange BIN path**
-   5. Enter the **time when you want** the script to run (format : hh:mmAM or hh:mmPM):
-   6. Specify the **account** and its password that will be used to run the script in the Scheduled Task (**Remember this account needs to be part of the Organization Management group**)
+```
+
+  4. Fill all the required information required by the script
+
+```text
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image08.png)
+```
+
+   5. Enter the **name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
+   6. By default, choose '**Def'** as Default analysis. 
+   7. Choose **OP** for On-Premises
+   8. If necessary, update the path for the location of **Exchange BIN path**
+   9. Enter the **time when you want** the script to run (format : hh:mmAM or hh:mmPM):
+   10.  Specify the **account** and its password that will be used to run the script in the Scheduled Task (**Remember this account needs to be part of the Organization Management group**)
+
 Result
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image09.png)
 
