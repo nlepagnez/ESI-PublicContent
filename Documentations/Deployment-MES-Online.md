@@ -113,7 +113,6 @@ Choose ONE from the following two deployment options to deploy the connector and
    3. Click on **Deploy to Azure**
    4. Select the preferred **Subscription**, **Resource Group**, **Region**
    5. Enter **Workspace Name**
- ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image30.png)
    6. Click **Next** and **Create**
 
 #### Method 2 - Manual Deployment of Azure Automation
