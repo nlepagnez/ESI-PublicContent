@@ -6,8 +6,8 @@ Introducing **M**icrosoft **E**xchange **S**ecurity Solution
 
 We built two Sentinel solutions :
 
-* **Microsoft Exchange Security for Exchange On-Premises** (Mandatory)
-* **Microsoft Exchange Security for Exchnage Online** (Optional)
+* **Microsoft Exchange Security for Exchange On-Premises**
+* **Microsoft Exchange Security for Exchange Online**
 
 Both solution collects and detects sensitive security operations happening on On-Premises Exchange Servers and Exchange Online using Microsoft Sentinel. This allows service owners and SOC teams to :
 
@@ -87,7 +87,7 @@ The collection is based on one connector and one additonal solution:
 * Data connector : 
   * Exchange Security Insights Online Collector (using Azure Functions)
   * This connector come with our solution Microsoft Exchange Security for Exchange Online
-* Solution : Microsoft 365. Microsoft Solution that will transfer Office Activity logs in Sentinel
+* Solution : Microsoft 365. Microsoft Solution that will transfer Office Activity logs in Sentinel for two workbooks
 
 #### Exchange Security Insights Online Collector (using Azure Functions)
 
@@ -103,8 +103,8 @@ List of workbook based on this connector :
 
 * Microsoft Exchange Security Review - Online
 * Microsoft Exchange Least Privilege with RBAC - Online
-* Microsoft Exchange Admin Activity - Online
-* Microsoft Exchange Search AdminAuditLog - Online
+* Microsoft Exchange Admin Activity - Online (Microsoft 365 solution required)
+* Microsoft Exchange Search AdminAuditLog - Online (Microsoft 365 solution required)
 
 ### Documentations
 
