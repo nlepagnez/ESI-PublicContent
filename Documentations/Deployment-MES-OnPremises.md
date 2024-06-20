@@ -116,23 +116,15 @@ The script Steip.ps1 will automatically deploy all the required configurations.
       2. Select **Agents** in the **Settings** section
       3. Extend the **Log Analytics Agent Instructions**
       4. Retrieve the **Workspace ID and Primary Key**
-
-```text
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image07.png)
-```
-
-  4. Fill all the required information required by the script
-
-```text
+   4. Fill all the required information required by the script
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image08.png)
-```
-
    5. Enter the **name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
    6. By default, choose '**Def'** as Default analysis. 
    7. Choose **OP** for On-Premises
    8. If necessary, update the path for the location of **Exchange BIN path**
    9. Enter the **time when you want** the script to run (format : hh:mmAM or hh:mmPM):
-   10.  Specify the **account** and its password that will be used to run the script in the Scheduled Task (**Remember this account needs to be part of the Organization Management group**)
+   10. Specify the **account** and its password that will be used to run the script in the Scheduled Task (**Remember this account needs to be part of the Organization Management group**)
 
 Result
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image09.png)
