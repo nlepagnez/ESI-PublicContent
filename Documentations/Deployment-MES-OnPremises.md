@@ -450,7 +450,7 @@ There are 2 methods to deploy the DCE :
 1. Method 1 - Azure Resource Manager (ARM) Template. Use this method for automated deployment of the DCR
 
    1. Go the **Microsoft Exchange Logs and Events** data connector Page
-   2. Extend the section **[Option 5] IIS logs of Exchange Servers / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**/**Create DCE (If not already created for Exchange Servers)**
+   2. Extend the section **[Option 6] Message Tracking of Exchange Servers / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**/**Create DCE (If not already created for Exchange Servers)**
    3. Click on **Deploy to Azure**
    4. Select the preferred **Subscription**, **Resource Group**, **Region**
 
@@ -482,23 +482,27 @@ There are 2 methods to deploy the DCE :
    2. From the Azure Portal, navigate to Workspace Analytics and select your target Workspace
    3. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
-   4. Click **Create new data collection** rule and Enter the **Name** of the rule **DCR-Option6-MessageTrackingLogs**
-   5. In the Schema and Transformation tab, choose the downloaded sample file
-   6. Upload the file that was download in step 1 
-   7. Click on **Transformation Editor**
-   8. In the **transformation field**, enter the following KQL request : 
+   4. In the Basics tab, enter **MessageTrackingLog** on the Table name
+   5. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
+   6. In the Schema and Transformation tab, choose the downloaded sample file
+   7. Upload the file that was download in step 1 
+   8. Click on **Transformation Editor**
+   9. In the **transformation field**, enter the following KQL request : 
 ```powershell
 source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
 ```
-   9. Click **Run** and after **Apply**
+   1. Click **Run** and after **Apply**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image47.png)
-10. Click **Next**, then click **Create**
-11. From the Azure Portal, navigate to **Azure Data collection rules**.
-12. Select the previously created DCR, like **DCR-Option6-MessageTrackingLogs**.
-13. In the **Resources** tab, enter you **Exchange Servers**.
-14. In **Data Sources,** add a Data Source type **Custom Text logs** and enter **'C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking*.log'** in file pattern, **'MessageTrackingLog_CL'** in Table Name. 
-15. In Transform field, enter the following KQL request : source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
-Click on **Add data source**.
+1.  Click **Next**, then click **Create**
+2.  From the Azure Portal, navigate to **Azure Data collection rules**.
+3.  Select the previously created DCR, like **DCR-Option6-MessageTrackingLogs**.
+4.  In the **Resources** tab, enter you **Exchange Servers**.
+5.  In **Data Sources,** add a Data Source type **Custom Text logs** and enter **'C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking*.log'** in file pattern, **'MessageTrackingLog_CL'** in Table Name. 
+6.  In Transform field, enter the following KQL request : 
+```powershell
+source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
+```
+7. Click on **Add data source**.
 
 #### Assign DCR to all Exchange servers
 1. From the **Azure Portal**, navigate to **Azure Data collection rules**
@@ -511,55 +515,50 @@ Click on **Add data source**.
 This option required a DCE (Data connection Endpoint).
 **This step needs do be only one time, for other DCR, you'll select this DCE.**
 There are 2 methods to deploy the DCE :
-
-
 1. Method 1 - Azure Resource Manager (ARM) Template. Use this method for automated deployment of the DCR
 
    1. Go the **Microsoft Exchange Logs and Events** data connector Page
-   2. Extend the section **[Option 6] Message Tracking of Exchange Servers / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**/**Create DCE (If not already created for Exchange Servers)**
+   2. Extend the section **[Option 7] HTTP Proxy of Exchange Servers / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**/**Create DCE (If not already created for Exchange Servers)**
    3. Click on **Deploy to Azure**
    4. Select the preferred **Subscription**, **Resource Group**, **Region**
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image31.png)
    1. Click **Next** and **Create**
 
-1. Method 2 - Manual Deployment of Azure DCE
-
-   1. From the **Azure Portal**, navigate to **Azure Data collection Endpoint**
-   2. Click **+ Create** at the top
-   3. In the Basics tab, fill the required fields, Select Windows as platform type and give a name to the DCR
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image42.png)
-   1. and Click **Review + Create**
-   2. Click **Create**
-
-#### DCR Creation
-1. Method 1 - Azure Resource Manager (ARM) Template. Use this method for automated deployment of the DCR
-   1. Go the **Microsoft Exchange Logs and Events** data connector Page
-   2. Extend the section **[Option 6] Message Tracking of Exchange Servers / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**/**Create DCR (If not already created for Exchange Servers)**
-   3. Click on **Deploy to Azure**
-   4. Select the preferred **Subscription**, **Resource Group**, **Region**
-   5. Enter **Workspace Name**
-   6. Enter the **DCE Name** created in the previous steps
-
 2. Method 2 - Manual Deployment of Azure DCR
 
-   1. From the **Azure Portal**, navigate to **Azure Data collection rules**
-   2. Click **+ Create** at the top
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image43.png)
-   1. In the Basics tab, fill the required fields, Select **Windows** as platform type and give a **name** to the DCR
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image32.png)
-   1. In the **Resources** tab, click **+ Add Resources** and select  your **Exchange Servers**
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image33.png)
-   1. In **'Collect and deliver'**, add a Data Source select IIS logs
-   2. If IIS logs are not located in their default location, change the path
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image44.png)
-   1. Click **Add data source** and click **Next Destination**
-   2. In destination Type select **Azure Monitor Logs** and in **Desitnation Details** select the appropriate **Sentinel workspace**
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image35.png)
-   1. and Click **Review + Create**
-   2. Click **Create**
+   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-MessageTrackingLogs.json)
+   2. From the Azure Portal, navigate to Workspace Analytics and select your target Workspace
+   3. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
+   4. In the Basics tab, enter **ExchangeHttpProxy ** on the Table name
+   5. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
+   6. Click **Create new data collection** rule and Enter the name **ExchangeHttpProxy** of the rule **DCR-Option7-HTTPProxyLogss**
+   5. In the Schema and Transformation tab, choose the downloaded sample file
+   6. Upload the file that was download in step 1 
+   7. Click on **Transformation Editor**
+   8. In the **transformation field**, enter the following KQL request : 
+```powershell
+source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
+```
+   9. Click **Run** and after **Apply**
+![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image47.png)
+10. Click **Next**, then click **Create**
+11. From the Azure Portal, navigate to **Azure Data collection rules**.
+12. Select the previously created DCR, like **DCR-Option7-HTTPProxyLogs**.
+13. In the **Resources** tab, enter you **Exchange Servers**.
+14. In **Data Sources,** add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Autodiscover*.log** in file pattern, **ExchangeHttpProxy_CL** in Table Name. 
+15. In Transform field, enter the following KQL request : 
+```powershell
+source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
+```
 
 
+#### Assign DCR to all Exchange servers
+1. From the **Azure Portal**, navigate to **Azure Data collection rules**
+2. Select the DCR
+3. Click **Settings / Resources**
+4. Select all Exchange Servers
 
 --------------------------------
 
