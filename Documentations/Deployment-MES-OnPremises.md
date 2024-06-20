@@ -95,10 +95,11 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 > * ExchangeConfiguration
 > * ExchangeEnvironmentList
 > * MESCheckVIP
+
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png)
 
 > More detailed information on Parsers can be found in the following documentation
-[Parser information](/Documentations/ParserInformation.md)
+[Parser information](https://github.com/nlepagnez/Azure-Sentinel/blob/master/Solutions/Microsoft%20Exchange%20Security%20-%20Exchange%20On-Premises/Parsers/README.md)
 
 #### Script Deployment
 
@@ -204,28 +205,32 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 
 ### Configuration
 
-#### Parser deployment 
+#### Parser deployment
+
 > NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
 List of Parsers that will be automatically deployed :
 
-* ExchangeAdminAuditLogs
-* ExchangeConfiguration
-* ExchangeEnvironmentList
-* MESCheckVIP
+> * ExchangeAdminAuditLogs
+> * ExchangeConfiguration
+> * ExchangeEnvironmentList
+> * MESCheckVIP
+
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png)
 
 > More detailed information on Parsers can be found in the following documentation
-[Parser information](/Documentations/ParserInformation.md)
+[Parser information](https://github.com/nlepagnez/Azure-Sentinel/blob/master/Solutions/Microsoft%20Exchange%20Security%20-%20Exchange%20On-Premises/Parsers/README.md)
 
 #### Agent Deployment
 
 This section needs to be be executed only once per server.
 The agent is used to collect Event log like MSExchange Management, Security logs...
-If you plan to collect information 
-- Only on Exchange servers for Options 1-2-5-6-7, the agent needs to be deployed on Exchange servers
-- For Options 3-4, the agent needs to be deployed on Exchange servers. These options are still on Beta.
+If you plan to collect information: 
+
+* Only on Exchange servers for Options 1-2-5-6-7, the agent needs to be deployed on Exchange servers
+* For Options 3-4, the agent needs to be deployed on Exchange servers. These options are still on Beta.
 
 ##### **Download and install the agents needed to collect logs for Microsoft Sentinel**. **Deploy Monitor Agents**
+
    1. This step is required only if it's the first time you onboard your Exchange Servers/Domain Controllers
    2. Select which agent you want to install in your servers to collect logs:
         1.[Prefered] Azure Monitor Agent via Azure Arc. Deploy the Azure Arc Agent
