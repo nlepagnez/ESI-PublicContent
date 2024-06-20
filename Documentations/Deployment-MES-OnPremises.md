@@ -175,6 +175,7 @@ The account used to launch the Script needs to be member of the group **Organiza
 The script will create the Scheluded tasks and fill a configuration file named **CollectExchSecConfiguration.json** with all the provided information.
 This file can be found in the **Config** folder. This folder is located in the folder where you unzip the zip.
 
+------------------------
 ## Deploy Optional Connector : Microsoft Exchange Logs and Events
 
 This connector is used to collect additionals logs :
@@ -187,9 +188,9 @@ This connector is used to collect additionals logs :
 * Message tracking logs for Exchange Servers : Also called Option 6
 * HTTPProxy logs for Exchange servers : Also called Option 7
 
-## Configuration of the optional Data Connector : Microsoft Exchange Logs and Events
+## To configure each options
 
-For details on how to configure this connector, you have two possibilities
+For details on how to configure the options, you have two possibilities
 
 1. Go to the Connector Page and follow the steps
 2. Follow this documentation
@@ -230,7 +231,7 @@ List of Parsers that will be automatically deployed :
 
 ## Deployment considerations
 
-To ingest the events logs or log files, you have two options :
+To ingest the events logs or log files, you have two components :
 
 * Use Azure Monitor Agent and DCR : Recommanded solution
 * Use the legacy Agent : This agent will be depreceated in August 2024
@@ -246,7 +247,8 @@ The deployment is in 3 steps :
 ### Agents Deployment
 The reference document is : [Manage Azure Monitor Agent](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-manage?tabs=azure-powershell#virtual-machine-extension-details)
 
-The following steps are just a summaru, please review closely the documentation or your internal document for Azure Arc deployment.
+The following steps are just a summary, please review closely the documentation or your internal document for Azure Arc deployment.
+Azure Arc deployment are most of the part managed by the Azure team.
 
 #### Deployment of the Azure Arc-enabled servers
 
