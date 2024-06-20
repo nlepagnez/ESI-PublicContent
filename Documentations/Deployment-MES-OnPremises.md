@@ -62,7 +62,7 @@ For details on how to configure this connector, you have two possibilities
 1. Go to the Connector Page and follow the steps
 2. Follow this documentation
 
-> We strongly recommended to follow this documentation as the information are more often updated and more detailed.
+> We strongly recommended to follow this documentation as the information are more detailed.
 
 If you choose to use the information provide in the Connector page :
 
@@ -89,12 +89,12 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 #### Parser deployment
 
 >NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
-List of Parsers that will be automatically deployed :
+>List of Parsers that will be automatically deployed :
 
-* ExchangeAdminAuditLogs
-* ExchangeConfiguration
-* ExchangeEnvironmentList
-* MESCheckVIP
+> * ExchangeAdminAuditLogs
+> * ExchangeConfiguration
+> * ExchangeEnvironmentList
+> * MESCheckVIP
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image15.png)
 
 > More detailed information on Parsers can be found in the following documentation
@@ -105,7 +105,7 @@ List of Parsers that will be automatically deployed :
 This connector is based on a script that will run on an On-Premises servers (normally an Admin server).
 
 Here the steps to deploy the script on this server.
-The script Steip.ps1 will automatically deploy all the required configurations.
+The script Setup.ps1 will automatically deploy all the required configurations.
 
 ##### Download the latest version of ESI Collector
 
@@ -135,11 +135,13 @@ The script Steip.ps1 will automatically deploy all the required configurations.
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image07.png)
    4. Fill all the required information required by the script
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image08.png)
-   5. Enter the **Name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization.  
+   5. Enter the **Name** of your environement the Environment name. This name will be displayed in your workbook. You should choose the name of your Exchange organization
+      1. This is a mandoatory information
+      2. Text information are only allower no GUID  
    6. By default, choose '**Def'** as Default analysis. 
    7. Choose **OP** for On-Premises
    8. If necessary, update the path for the location of **Exchange BIN path**
-   9. Enter the **time when you want** the script to run (format : hh:mmAM or hh:mmPM):
+   9.  Enter the **time when you want** the script to run (format : hh:mmAM or hh:mmPM):
    10. Specify the **account** and its password that will be used to run the script in the Scheduled Task (**Remember this account needs to be part of the Organization Management group**)
 
 **Here the scheduled task, after the script completion**
@@ -181,7 +183,7 @@ For details on how to configure this connector, you have two possibilities
 1. Go to the Connector Page and follow the steps
 2. Follow this documentation
 
-> We strongly recommended to follow this documentation as the information are more often updated and more detailed.
+> We strongly recommended to follow this documentation as the information are more detailed.
 
 If you choose to use the information provide in the Connector page :
 
