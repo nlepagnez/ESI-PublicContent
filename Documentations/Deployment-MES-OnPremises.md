@@ -183,7 +183,7 @@ This connector is used to collect additionals logs :
 * Security for ALL Domain controllers : Also called Option 4
 * IIS logs for Exchange servers : Also called Option 5
 * Message tracking logs for Exchange Servers : Also called Option 6
-* HTTPProcy logs for Exchange servers : Also called Option 7
+* HTTPProxy logs for Exchange servers : Also called Option 7
 
 ## Configuration of the optional Data Connector : Microsoft Exchange Logs and Events
 
@@ -196,9 +196,10 @@ For details on how to configure this connector, you have two possibilities
 
 If you choose to use the information provide in the Connector page :
 
-1. Go to Data connectors in the configuration section
-2. Select Exchange Security Insights On-Premise Collector
-3. Click on Open connector page
+1. Go to **Data connectors** in the configuration section
+2. Select **Exchange Security Insights On-Premise Collector**
+3. Click on **Open connector page**
+
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image10.png "Connector Deployment")
 
 ## Prerequisites
@@ -213,9 +214,8 @@ To integrate with Exchange Security Insights On-Premise Collector make sure you 
 
 ## Parser deployment
 
-> NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
+> Note :  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
 List of Parsers that will be automatically deployed :
-
 > * ExchangeAdminAuditLogs
 > * ExchangeConfiguration
 > * ExchangeEnvironmentList
@@ -231,9 +231,9 @@ List of Parsers that will be automatically deployed :
 To ingest the events logs or log files, you have two options :
 
 * Use the legacy Agent : This agent will be depreceated in August 2024
-* Use Azure Arc and DCR : Recommanded solution
+* Use Azure Monitor Agent and DCR : Recommanded solution
 
-## Legacy Agent Deployment
+## Legacy Agent Deployment for Options 1-2-3-4-5-6-7
 
 This section needs to be be executed only once per server.
 The agent is used to collect Event log like MSExchange Management, Security logs, IIS log files...
@@ -251,10 +251,10 @@ If you plan to collect information:
    1. Or go the **Log Analytics workspace for your Sentinel**
    2. Select **Agents** in the **Settings** section
    3. Extend the **Log Analytics Agent Instructions**
-   4. Clickclick on Download Windows Agent (64 bit)
+   4. Click on **Download Windows Agent (64 bit)**
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image11.png)
 
-### Deploy log injestion for Option 1  -  MS Exchange Management Log collection
+### Option 1  -  MS Exchange Management Log collection
 
 Option 1 is necessary for the following Workbooks :
 
@@ -274,10 +274,113 @@ Configure the logs to be collected - Configure the Events you want to collect an
 
 All the Exchange Servers with the Agent installed will upload the MSExchange Management log
 
+### Option 2 - Security, Application, System for Exchange Servers
+
+Configure the logs to be collected - Configure the Events you want to collect and their severities.
+
+1. Go the **Log Analytics workspace for your Sentinel**
+2. Click **Legacy agents management**
+3. Select **Windows Event logs**
+4. Click **Add Windows event log**
+5. Enter **System** as log name
+6. Collect **Error**, **Warning** and **Information** types
+7. Enter **Application** as log name
+8. Collect **Error**and  **Warning** types
+9. Click **Apply**
+
+Security logs are only avaialble with the Azure Monitor Agent
+
+### Option 3 - Security for Domain controllers located in the Exchange AD sites
+
+Only avaialble with the Azure Monitor Agent
+
+### Option 4 - Security for ALL Domain controllers
+
+Only avaialble with the Azure Monitor Agent
+
+### Option 5 - IIS logs for Exchange servers
+
+1. Go the **Log Analytics workspace for your Sentinel**
+2. Click **Legacy agents management**
+3. Select **IIS logs**
+4. Ckeck **Collect W3C format IIS log files**
+
+> Remember that depending on the number of Exchange servers and their activities, this configuration can lead to the ingestion of a huge amount af data
+
+### Option 6 - Message tracking logs for Exchange Servers
+
+1. Go the **Log Analytics workspace for your Sentinel**
+2. Select **Tables**, click **+ Create** and click on **New custom log (MMA-Based)**
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image21.png)
+
+3. Go to the folder enter the path **C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking**. Select **any Message Tracking log file**, click **Open** and click **Next**
+  
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image22.png)
+4. In **Record Delimeter**, ensure that **New line** is selected and click **Next**
+5. Select type **Windows** and enter the path **C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking\*.log**. Click **Next**
+ 
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image23.png)
+1. Enter **MessageTrackingLog** In **Custom log name** and click **Next**.
+
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image23.png)
+1. Click **Create**
+
+### Option 7 - HTTPProxy logs for Exchange servers
+
+1. Go the **Log Analytics workspace for your Sentinel**
+2. Select **Tables**, click **+ Create** and click on **New custom log (MMA-Based)**
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image21.png)
+
+3. To provide a sample, go to the folder enter the path **C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Mapi**. Select **any log file**, click **Open** and click **Next**
+  
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image25.png)
+4. In **Record Delimeter**, ensure that **New line** is selected and click **Next**
+5. Select type **Windows** and enter the following path and Click **Next**
+
+   1. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Autodiscover*.log
+   2. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Eas*.log
+   3. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ecp*.log
+   4. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ews*.log
+   5. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Mapi*.log
+   6. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Oab*.log
+   7. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Owa*.log
+   8. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\OwaCalendar*.log
+   9. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\PowerShell*.log
+   10. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\RpcHttp*.log
+ 
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image26.png)
+1. Enter **ExchangeHttpProxy** In **Custom log name** and click **Next**.
+
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image27.png)
+1. Click **Create**
+
+## Azure Monitor Agentand DCR Deployment
+
+### Option 1  -  MS Exchange Management Log collection
+
+Option 1 is necessary for the following Workbooks :
+
+* Microsoft Exchange Admin Activity
+* Microsoft Exchange Search AdminAuditLog
+
+
+All the Exchange Servers with the Agent installed will upload the MSExchange Management log
+
+### Option 2 - Security, Application, System for Exchange Servers
 
 
 
+Security logs are only avaialble with the Azure Monitor Agent
+
+### Option 3 - Security for Domain controllers located in the Exchange AD sites
 
 
-## Azure Arc and DCR Deployment
+### Option 4 - Security for ALL Domain controllers
+
+
+### Option 5 - IIS logs for Exchange servers
+
+### Option 6 - Message tracking logs for Exchange Servers
+
+### Option 7 - HTTPProcy logs for Exchange servers
 
