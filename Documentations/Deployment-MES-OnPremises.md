@@ -157,10 +157,10 @@ Steps :
 
 1. Create a Scheluled task
 2. Specify the account
-3. Set the schedule
-4. Set the script
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image17.png)
+3. Set the schedule
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image18.png)
+4. Set the script
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image19.png)
 
 The account used to launch the Script needs to be member of the group **Organization Management**
