@@ -1,4 +1,4 @@
-# Deplyment Overview
+# Deployment Overview
 
 ## Solution Microsoft Exchange Security for Exchange On-Premises
 
