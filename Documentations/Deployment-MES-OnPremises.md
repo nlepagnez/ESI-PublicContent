@@ -492,7 +492,7 @@ There are 2 methods to deploy the DCE :
 
 2. Method 2 - Manual Deployment of Azure DCR
 
-   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-MessageTrackingLogs.json)
+   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-HttpProxyLogs.json)
    2. From the Azure Portal, navigate to Workspace Analytics and select your target Workspace
    3. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
@@ -525,10 +525,13 @@ source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostnam
 4. Select all Exchange Servers
 
 ### Option 7 - HTTPProxy logs for Exchange servers
+
 #### DCE Creation
+
 This option required a DCE (Data connection Endpoint).
 **This step needs do be only one time, for other DCR, you'll select this DCE.**
 There are 2 methods to deploy the DCE :
+
 1. Method 1 - Azure Resource Manager (ARM) Template. Use this method for automated deployment of the DCR
 
    1. Go the **Microsoft Exchange Logs and Events** data connector Page
@@ -537,6 +540,7 @@ There are 2 methods to deploy the DCE :
    4. Select the preferred **Subscription**, **Resource Group**, **Region**
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image31.png)
+
    1. Click **Next** and **Create**
 
 2. Method 2 - Manual Deployment of Azure DCR
@@ -567,8 +571,8 @@ source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
 source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
 ```
 
-
 #### Assign DCR to all Exchange servers
+
 1. From the **Azure Portal**, navigate to **Azure Data collection rules**
 2. Select the DCR
 3. Click **Settings / Resources**
@@ -693,7 +697,7 @@ Only avaialble with the Azure Monitor Agent
    10. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\RpcHttp*.log
  
   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image26.png)
-1. Enter **ExchangeHttpProxy** In **Custom log name** and click **Next**.
+6. Enter **ExchangeHttpProxy** In **Custom log name** and click **Next**.
 
   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image27.png)
-1. Click **Create**
+7. Click **Create**
