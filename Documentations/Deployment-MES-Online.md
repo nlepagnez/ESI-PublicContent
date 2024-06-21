@@ -121,15 +121,29 @@ Choose ONE from the following two deployment options to deploy the connector and
 1. Create the Azure Automation Account
    1. From the Azure Portal, navigate to **Azure Automation Account**.
    2. Click **+ Add** at the top
-   3. In the **Basics** tab, fill the required fields and give a name to the **Azure Automation**
+   3. In the **Basics** tab, fill the required fields and give a **Vame** to the Azure Automation
    4. In the **Advanced** and **Networking** and Tags Tabs, leave fields as default if you don't need to customize them
    5. 'Make other preferable configuration changes', if needed, then click **Create**.
-2. Add **Exchange Online Management Module**, **Microsoft Graph (Authentication, User and Group)** Modules
-   1. On the **Automation Account** page, select **Modules**
-   2. Click on **Browse** gallery and search the **ExchangeOnlineManagement** module
-   3. Select it and click on **Select**
-   4. Choose **Version 5.1** on Runtime version field and click on **Import** button
-   5. Repeat the step for the following modules : **Microsoft.Graph.Authentication, Microsoft.Graph.Users and Microsoft.Graph.Groups**
+2. Add **Exchange Online Management Module**, **Microsoft Graph Authentication**,**Microsoft Graph  User** and **Microsoft Graph Group** Modules
+3. Depending of you GUI Experience, it can be at two different places
+   1. Method 1:  On the **Automation Account** page, select **Modules**
+  ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image57.png)
+      1. Click on **Browse** gallery and search the **ExchangeOnlineManagement** module
+      2. Select it and click on **Select**
+      3. Choose **Version 5.1** on Runtime version field and click on **Import** button
+      4. Repeat the step for the following modules : **Microsoft.Graph.Authentication, Microsoft.Graph.Users and Microsoft.Graph.Groups**
+   2. Method 2 : Go to in **Runbook Environments(Preview)**
+      1. Click on **Create**
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image54.png)
+      2. Give a **name** for the Runtime environment
+      3. **Language**, select **Powershell**
+      4. **Version**, select **5.1**
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image55.png)
+      5. Click **Next**
+      6. Clcik **+ Add from Gallery**
+      7. Add the following module : **Exchange Online Management Module**, **Microsoft Graph (Authentication, User and Group)**
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image56.png)
+      8. clic **Create**
 
 > **Attention, you need to wait for Microsoft.Graph.Authentication installation before processing next modules**
 3. Download the Runbook Content
