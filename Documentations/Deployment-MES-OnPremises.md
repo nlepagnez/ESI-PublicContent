@@ -492,31 +492,31 @@ There are 2 methods to deploy the DCE :
 
 2. Method 2 - Manual Deployment of Azure DCR
 
-   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-HttpProxyLogs.json)
-   2. From the Azure Portal, navigate to Workspace Analytics and select your target Workspace
-   3. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
+   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-MessageTrackingLogs.json)
+   2. Table Creation in Workspace
+   3. From the **Azure Portal**, navigate to **Workspace Analytics** and select your target Workspace
+   4. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
-   4. In the Basics tab, enter **MessageTrackingLog** on the Table name
-   5. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
-   6. In the Schema and Transformation tab, choose the downloaded sample file
-   7. Upload the file that was download in step 1 
-   8. Click on **Transformation Editor**
-   9. In the **transformation field**, enter the following KQL request : 
-```powershell
+   5. In the Basics tab, enter **MessageTrackingLog** on the Table name
+   6. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
+   7. Select **Endpoint** created in the previous steps
+   8. In the Schema and Transformation tab, choose the downloaded sample file
+   9. Upload the file that was download in step 1 
+   10. Click on **Transformation Editor**
+   11. In the **transformation field**, enter the following KQL request :
+``` powershell
 source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
 ```
    1. Click **Run** and after **Apply**
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image47.png)
-1.  Click **Next**, then click **Create**
-2.  From the Azure Portal, navigate to **Azure Data collection rules**.
-3.  Select the previously created DCR, like **DCR-Option6-MessageTrackingLogs**.
-4.  In the **Resources** tab, enter you **Exchange Servers**.
-5.  In **Data Sources,** add a Data Source type **Custom Text logs** and enter **'C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking*.log'** in file pattern, **'MessageTrackingLog_CL'** in Table Name. 
-6.  In Transform field, enter the following KQL request : 
+   2. Click **Next**, then click **Create**
+   3.  From the Azure Portal, navigate to **Azure Data collection rules**
+   4.  Select the previously created DCR, like **DCR-Option6-MessageTrackingLogs**
+   5.  In **Data Sources,** add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking*.log** in file pattern, **MessageTrackingLog_CL** in Table Name
+   6.  In Transform field, enter the following KQL request : 
 ```powershell
 source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
 ```
-7. Click on **Add data source**.
+   1.   Click on **Add data source**
 
 #### Assign DCR to all Exchange servers
 1. From the **Azure Portal**, navigate to **Azure Data collection rules**
@@ -545,31 +545,42 @@ There are 2 methods to deploy the DCE :
 
 2. Method 2 - Manual Deployment of Azure DCR
 
-   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-MessageTrackingLogs.json)
-   2. From the Azure Portal, navigate to Workspace Analytics and select your target Workspace
-   3. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
+   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-HttpProxyLogs.json)
+   2. Table Creation in Workspace
+   3. From the **Azure Portal**, navigate to Workspace Analytics and select your target Workspace
+   4. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
-   4. In the Basics tab, enter **ExchangeHttpProxy ** on the Table name
-   5. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
-   6. Click **Create new data collection** rule and Enter the name **ExchangeHttpProxy** of the rule **DCR-Option7-HTTPProxyLogss**
-   5. In the Schema and Transformation tab, choose the downloaded sample file
-   6. Upload the file that was download in step 1 
-   7. Click on **Transformation Editor**
-   8. In the **transformation field**, enter the following KQL request : 
-```powershell
-source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
-```
-   9. Click **Run** and after **Apply**
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image47.png)
-10. Click **Next**, then click **Create**
-11. From the Azure Portal, navigate to **Azure Data collection rules**.
-12. Select the previously created DCR, like **DCR-Option7-HTTPProxyLogs**.
-13. In the **Resources** tab, enter you **Exchange Servers**.
-14. In **Data Sources,** add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Autodiscover*.log** in file pattern, **ExchangeHttpProxy_CL** in Table Name. 
-15. In Transform field, enter the following KQL request : 
-```powershell
-source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
-```
+   5. In the Basics tab, enter **ExchangeHttpProxy** on the Table name
+   6. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option7-HTTPProxyLogsss**
+   7. Select **Endpoint** created in the previous steps
+   8. Click **Create**
+   9. In the Schema and Transformation tab, choose the downloaded sample file
+   10. Upload the file that was download in step 1 
+   11. Click on **Transformation Editor**
+   12. In the **transformation field**, enter the following KQL request : 
+   ```powershell
+   source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
+   ```
+   13. Click **Run** and after **Apply**
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image47.png)
+   14. Click **Next**, then click **Create**
+   15. From the Azure Portal, navigate to **Azure Data collection rules**.
+   16. Select the previously created DCR, like **DCR-Option7-HTTPProxyLogs**.
+   18. In **Data Sources,** add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Autodiscover*.log** in file pattern, **ExchangeHttpProxy_CL** in Table Name. 
+   19. In Transform field, enter the following KQL request : 
+   ```powershell
+   source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
+   ```
+   20. Repeat this for all folders :
+      1.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Eas*.log
+      2.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ecp*.log
+      3.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ews*.log
+      4.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Mapi*.log
+      5.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Oab*.log
+      6.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Owa*.log
+      7.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\OwaCalendar*.log
+      8.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\PowerShell*.log
+      9.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\RpcHttp*.log
 
 #### Assign DCR to all Exchange servers
 
