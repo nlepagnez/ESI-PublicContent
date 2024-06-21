@@ -127,37 +127,46 @@ Choose ONE from the following two deployment options to deploy the connector and
 2. Add **Exchange Online Management Module**, **Microsoft Graph Authentication**,**Microsoft Graph  User** and **Microsoft Graph Group** Modules
 3. Depending of you GUI Experience, it can be at two different places
    1. Method 1:  On the **Automation Account** page, select **Modules**
+
   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image57.png)
       1. Click on **Browse** gallery and search the **ExchangeOnlineManagement** module
       2. Select it and click on **Select**
       3. Choose **Version 5.1** on Runtime version field and click on **Import** button
       4. Repeat the step for the following modules : **Microsoft.Graph.Authentication, Microsoft.Graph.Users and Microsoft.Graph.Groups**
-   2. Method 2 : Go to in **Runbook Environments(Preview)**
+   1. Method 2 : Go to in **Runbook Environments(Preview)**
       1. Click on **Create**
+
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image54.png)
       2. Give a **name** for the Runtime environment
       3. **Language**, select **Powershell**
       4. **Version**, select **5.1**
+
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image55.png)
       5. Click **Next**
       6. Clcik **+ Add from Gallery**
       7. Add the following module : **Exchange Online Management Module**, **Microsoft Graph (Authentication, User and Group)**
+
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image56.png)
-      8. clic **Create**
+      8. Click **Create**
 
 > **Attention, you need to wait for Microsoft.Graph.Authentication installation before processing next modules**
 3. Download the Runbook Content
-   1. Download the latest version of ESI Collector. The latest version can be found here : [ScriptLocation](https://aka.ms/ESI-ExchangeCollector-Script)
+   1. Download the latest version of ESI Collector. The latest version can be found here : [Script Location](https://aka.ms/ESI-ExchangeCollector-Script)
    2. Unzip the file to find the JSON file and the PS1 file for next step
 4. Create Runbook
    1. On the **Automation Account page**, select the **Runbooks** button
-   2. Click on **Create** a runbook and name it like **ESI-Collector** with a runbook type **PowerShell**, Runtime **Version 5.1** and click **Create**
-   3. Import the **content of the previous step's PS1** file in the Runbook window
-   4. Click on **Publish**
+   2. Click on **Create** a runbook and name it like **ESI-Collector** with a runbook type **PowerShell**
+   3. Depending on you GUI experience
+      1. Runtime **Version 5.1** and click **Create**
+      2. Click **Select from existin**g and choose the Runtime environment create in the Previous steps and click **Create**
+   4. Import the **content of the PS1** in the Runbook window
+      1. Open the file CollectExchSecIns.ps1 in the folder that unzip in the previous step
+   5. Click on **Publish** and **Yes**
 5. Create GlobalConfiguration Variable
    1. On the **Automation Account page**, select the **Variables** button
    2. Click on **Add a Variable** and name it exaclty '**GlobalConfiguration**' with a type **String**
-   3. On **Value** field, copy the content of the previous step's JSON file
+   3. On **Value** field, copy the content of JSON file extract from the zip file
+      1. Open the file CollectExchSecConfiguration.json in the folder that unzip in the previous step
    4. Inside the content, replace the values of **WorkspaceID** and **WorkspaceKey**
    5. Click on **Create** button
 6. Create TenantName Variable
@@ -171,19 +180,21 @@ Choose ONE from the following two deployment options to deploy the connector and
     3.  On **Value** field, write **Never**
     4.  Click on **Create** button
 8.  Create a Runbook Schedule
-    1.  On the **Automation Account page**, select the **Runbook** button and click on your created runbook
-    2.  Click on **Schedules** and **Add** a schedule button
-    3.  Click on **Schedule**, **Add a Schedule** and name it. Select **Recurring** value with a reccurence of every **1 day**, click **Create**
+    1.  On the **Automation Account page**, select the **Runbook** button and click on your runbook you create in the previous steps
+    2.  Click on **Schedules** and **Add** a schedule button, chosse Link a Schedule to your Workbook
+    3.  Click on **Schedule**, **Add a Schedule** and name it. Choose the time, Select **Recurring** value with a reccurence of every **1 day**, click **Create**
     4.  Click on **Configure parameters and run settings**. Leave all empty and click on OK and OK again
 
 ### Assign Microsoft Graph Permission and Exchange Online Permission to Managed Identity Account
+
+> The following steps are not part of the automatic deployment. They need to be perform whenever you choose manual or automatic deployment for the Azure Automation account.
 
 To be able to collect Exchange Online information and to be able to retrieve User information and memberlist of admin groups, the automation account need multiple permission.
 1. Download Permission Script
    1. [Permission Update script](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Solutions/ESICollector/OnlineDeployment/ExchangeOnlinePermSetup.ps1)
 2. Retrieve the Azure Automation Managed Identity GUID and insert it in the downloaded script
    1. Go to your **Automation Account**
-   2. In the **Identity** Section. You can find the **Guid** of your Managed Identity
+   2. In the **Account Settings / Identity** Section. You can find the **Guid** of your Managed Identity
    3. Replace the GUID in **$MI_ID** = "XXXXXXXXXXX" with the GUID of your Managed Identity
 3. Launch the script with a **Global-Administrator** account
 > Attention this script requires **MSGraph Modules and Admin Consent** to access to your tenant with Microsoft Graph.
@@ -192,7 +203,7 @@ The script will add 3 permissions to the Managed identity:
    2. **User.Read.All on Microsoft Graph API**
    3. **Group.Read.All on Microsoft Graph API**
 4. Exchange Online Role Assignment
-   1. As a **Global Administrator**, go to **Roles and Administrators**
+   1. In **Entra**, as a **Global Administrator**, go to **Roles and Administrators**
    2. Select **Global Reader** role and click to **Add assignments**
    3. Click on **No member selected** and search your **Managed Identity account Name** beginning by the name of your automation account like **ESI-Collector**. Select it and click on **Select**
    4. Click **Next** and validate the assignment by clicking **Assign**
