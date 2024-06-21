@@ -8,7 +8,7 @@ https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Deployme
 ## Deployment Microsoft Exchange Security for Exchange On-Premises
 https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Deployment-MES-OnPremises.md
 
-## Deployment Microsoft Exchange Security for Exchange Online (in Progess)
+## Deployment Microsoft Exchange Security for Exchange Online
 https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Deployment-MES-Online.md
 
 ## Collectors Information
