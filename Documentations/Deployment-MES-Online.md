@@ -5,7 +5,7 @@ You need de deploy two solution :
 * Microsoft Exchange Security for Exchange Online : Our solutions
 * Microsoft 365 : Microsoft Offical solution to ingest M365 log in Sentinel. This solution is required for the AdminAuditlog and Admin activity Workbook
 
-## Microsoft 365
+## Microsoft 365 Solution
 
 ### Solution Installation
 This solution needs also the the Microsoft 365 solution to ingest OfficeActivity logs in Microsoft Sentinel
@@ -27,7 +27,7 @@ This solution needs also the the Microsoft 365 solution to ingest OfficeActivity
 5. Click **Apply Change**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image51.png)
 
-## Microsoft Exchange Security for Exchange Online
+## Microsoft Exchange Security for Exchange Online Solution
 
 1. In Microsoft Sentinel
 2. Select Content Hub
@@ -47,7 +47,10 @@ This solution needs also the the Microsoft 365 solution to ingest OfficeActivity
   * ExchangeAdminAuditLogs
   * ExchangeConfiguration
   * ExchangeEnvironmentList
-  * MESCheckVIP
+  * MESCheckOnlineVIP
+  * MESCompareDataMRA
+  * MESOfficeActivityLogs
+
 * 4 Workbooks template
   * Microsoft Exchange Admin Activity - Online
   * Microsoft Exchange Least Privilege with RBAC - Online
@@ -78,14 +81,13 @@ To integrate with Exchange Security Insights Online Collector (using Azure Funct
 >NOTE:  To work as expected, this data connector depends on a parser based on a Kusto Function. **(When standard deployement, Parsers are automatically deployed)**
 >List of Parsers that will be automatically deployed :
 
-> * ExchangeAdminAuditLogs
-> * ExchangeConfiguration
-> * ExchangeEnvironmentList
-> * MESCheckVIP
-> * MESCheckOnlineVIP
-> * MESCheckVIP
-> * MESCompareDataMRA
-> * MESOfficeActivityLogs
+* ExchangeAdminAuditLogs
+* ExchangeConfiguration
+* ExchangeEnvironmentList
+* MESCheckOnlineVIP
+* MESCompareDataMRA
+* MESOfficeActivityLogs
+
 
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image50.png)
 
