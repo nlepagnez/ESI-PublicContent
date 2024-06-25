@@ -2984,6 +2984,10 @@ $Script:SupportedConfigurationVersion = "2.4"
                 Write-LogMessage "********** New version of the script available. $($script:VersionNotToDateMessage)" -Level Warning
                 $script:VersionNotToDate = $true
             }
+            else
+            {
+                Write-LogMessage "Script is up to date. Version : $CurrentVersion" -Level Information
+            }
 
         }
         catch {
