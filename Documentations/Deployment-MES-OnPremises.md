@@ -1,5 +1,56 @@
 # Deployment Microsoft Exchange Security for Exchange On-Premises
 
+- [Deployment Microsoft Exchange Security for Exchange On-Premises](#deployment-microsoft-exchange-security-for-exchange-on-premises)
+  - [Install the solution](#install-the-solution)
+  - [Options deployment](#options-deployment)
+  - [Configuration of the Mandatory data Connector : Exchange Security Insights On-Premise Collector](#configuration-of-the-mandatory-data-connector--exchange-security-insights-on-premise-collector)
+    - [Prerequisites](#prerequisites)
+    - [Configuration](#configuration)
+      - [Parser deployment](#parser-deployment)
+      - [Script Deployment](#script-deployment)
+        - [Download the latest version of ESI Collector](#download-the-latest-version-of-esi-collector)
+        - [On the serveur that will run the collect](#on-the-serveur-that-will-run-the-collect)
+        - [Find the information configured by the scripts](#find-the-information-configured-by-the-scripts)
+  - [Deploy Optional Connector : Microsoft Exchange Logs and Events](#deploy-optional-connector--microsoft-exchange-logs-and-events)
+  - [To configure each options](#to-configure-each-options)
+  - [Prerequisites](#prerequisites-1)
+  - [Parser deployment](#parser-deployment-1)
+  - [Deployment considerations](#deployment-considerations)
+  - [Azure Arc-enabled servers, Azure Monitor Agent and DCR Deployment](#azure-arc-enabled-servers-azure-monitor-agent-and-dcr-deployment)
+    - [Agents Deployment](#agents-deployment)
+      - [Deployment of the Azure Arc-enabled servers](#deployment-of-the-azure-arc-enabled-servers)
+      - [Deployment Azure Monitor Agent](#deployment-azure-monitor-agent)
+    - [Option 1  -  MS Exchange Management Log collection](#option-1-----ms-exchange-management-log-collection)
+      - [DCR Creation](#dcr-creation)
+      - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers)
+    - [Option 2 - Security, Application, System for Exchange Servers](#option-2---security-application-system-for-exchange-servers)
+      - [Security logs](#security-logs)
+      - [Application and System Event logs](#application-and-system-event-logs)
+      - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers-1)
+    - [Option 3 and 4 Security logs of Domain Controllers](#option-3-and-4-security-logs-of-domain-controllers)
+      - [Security logs](#security-logs-1)
+    - [Option 5 - IIS logs for Exchange servers](#option-5---iis-logs-for-exchange-servers)
+      - [DCE Creation](#dce-creation)
+      - [DCR Creation](#dcr-creation-1)
+      - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers-2)
+    - [Option 6 - Message tracking logs for Exchange Servers](#option-6---message-tracking-logs-for-exchange-servers)
+      - [DCE Creation](#dce-creation-1)
+      - [DCR Creation](#dcr-creation-2)
+      - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers-3)
+    - [Option 7 - HTTPProxy logs for Exchange servers](#option-7---httpproxy-logs-for-exchange-servers)
+      - [DCE Creation](#dce-creation-2)
+      - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers-4)
+  - [Legacy Agent Deployment for Options 1-2-3-4-5-6-7](#legacy-agent-deployment-for-options-1-2-3-4-5-6-7)
+    - [**Download and install the agents needed to collect logs for Microsoft Sentinel**](#download-and-install-the-agents-needed-to-collect-logs-for-microsoft-sentinel)
+    - [Option 1  -  MS Exchange Management Log collection](#option-1-----ms-exchange-management-log-collection-1)
+    - [Option 2 - Security, Application, System for Exchange Servers](#option-2---security-application-system-for-exchange-servers-1)
+    - [Option 3 - Security for Domain controllers located in the Exchange AD sites](#option-3---security-for-domain-controllers-located-in-the-exchange-ad-sites)
+    - [Option 4 - Security for ALL Domain controllers](#option-4---security-for-all-domain-controllers)
+    - [Option 5 - IIS logs for Exchange servers](#option-5---iis-logs-for-exchange-servers-1)
+    - [Option 6 - Message tracking logs for Exchange Servers](#option-6---message-tracking-logs-for-exchange-servers-1)
+    - [Option 7 - HTTPProxy logs for Exchange servers](#option-7---httpproxy-logs-for-exchange-servers-1)
+
+
 ## Install the solution
 
 1. In Microsoft Sentinel
@@ -265,16 +316,11 @@ After the Deployment, the servers can be found in **Azure Arc/Azure Arc resource
 These steps needs to be done on all servers.
 
 ####  Deployment Azure Monitor Agent
-On the server where Azure Arc-enabled servers has been installed:
-1. Open a Powershell
-2. Enter the following command 
-```powershell
-   New-AzConnectedMachineExtension -Name AzureMonitorWindowsAgent -ExtensionType AzureMonitorWindowsAgent -Publisher Microsoft.Azure.Monitor -ResourceGroupName <resource-group-name> -MachineName <arc-server-name> -Location <arc-server-location> -EnableAutomaticUpgrade
-```
+The agent will be deployment by the first DCR
+
 After the Deployment, the extension can be view **Azure Arc/Azure Arc resources/Machines**, click on the **Machine Name** and go to **Settings/Extension**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image29.png)
 
-These steps needs to be done on all servers.
 
 ### Option 1  -  MS Exchange Management Log collection
 
@@ -708,7 +754,9 @@ Only avaialble with the Azure Monitor Agent
    10. C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\RpcHttp*.log
  
   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image26.png)
+  
 6. Enter **ExchangeHttpProxy** In **Custom log name** and click **Next**.
 
   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image27.png)
+  
 7. Click **Create**

@@ -1,5 +1,18 @@
 # Deployment Microsoft Exchange Security for Exchange Online
 
+- [Deployment Microsoft Exchange Security for Exchange Online](#deployment-microsoft-exchange-security-for-exchange-online)
+  - [Microsoft 365 Solution](#microsoft-365-solution)
+    - [Solution Installation](#solution-installation)
+    - [Solution configuration](#solution-configuration)
+  - [Microsoft Exchange Security for Exchange Online Solution](#microsoft-exchange-security-for-exchange-online-solution)
+  - [Prerequisites](#prerequisites)
+  - [Configuration](#configuration)
+    - [Parser deployment](#parser-deployment)
+    - [Connector and Azure Automation deployment](#connector-and-azure-automation-deployment)
+      - [Method 1 - Azure Resource Manager (ARM) Template](#method-1---azure-resource-manager-arm-template)
+      - [Method 2 - Manual Deployment of Azure Automation](#method-2---manual-deployment-of-azure-automation)
+    - [Assign Microsoft Graph Permission and Exchange Online Permission to Managed Identity Account](#assign-microsoft-graph-permission-and-exchange-online-permission-to-managed-identity-account)
+
 
 You need de deploy two solution :
 * Microsoft Exchange Security for Exchange Online : Our solutions
@@ -121,7 +134,7 @@ Choose ONE from the following two deployment options to deploy the connector and
 1. Create the Azure Automation Account
    1. From the Azure Portal, navigate to **Azure Automation Account**.
    2. Click **+ Add** at the top
-   3. In the **Basics** tab, fill the required fields and give a **Vame** to the Azure Automation
+   3. In the **Basics** tab, fill the required fields and give a **Name** to the Azure Automation
    4. In the **Advanced** and **Networking** and Tags Tabs, leave fields as default if you don't need to customize them
    5. 'Make other preferable configuration changes', if needed, then click **Create**.
 2. Add **Exchange Online Management Module**, **Microsoft Graph Authentication**,**Microsoft Graph  User** and **Microsoft Graph Group** Modules
@@ -139,15 +152,17 @@ Choose ONE from the following two deployment options to deploy the connector and
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image54.png)
       2. Give a **name** for the Runtime environment
       3. **Language**, select **Powershell**
-      4. **Version**, select **5.1**
+      4.  **Version**, select **5.1**
 
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image55.png)
+   
       5. Click **Next**
       6. Clcik **+ Add from Gallery**
       7. Add the following module : **Exchange Online Management Module**, **Microsoft Graph (Authentication, User and Group)**
 
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image56.png)
-      8. Click **Create**
+       
+       8. Click **Create**
 
 > **Attention, you need to wait for Microsoft.Graph.Authentication installation before processing next modules**
 3. Download the Runbook Content
