@@ -156,11 +156,12 @@ Choose ONE from the following two deployment options to deploy the connector and
 4. Create Runbook
    1. On the **Automation Account page**, select the **Runbooks** button
    2. Click on **Create** a runbook and name it like **ESI-Collector** with a runbook type **PowerShell**
-   3. Depending on you GUI experience
+   3. New GUI experience
       1. Runtime **Version 5.1** and click **Create**
       2. Click **Select from existin**g and choose the Runtime environment create in the Previous steps and click **Create**
-   4. Import the **content of the PS1** in the Runbook window
-      1. Open the file CollectExchSecIns.ps1 in the folder that unzip in the previous step
+   4. Classic GUI
+      1. Import the **content of the PS1** in the Runbook window
+      2. Open the file CollectExchSecIns.ps1 in the folder that unzip in the previous step
    5. Click on **Publish** and **Yes**
 5. Create GlobalConfiguration Variable
    1. On the **Automation Account page**, select the **Variables** button
