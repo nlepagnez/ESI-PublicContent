@@ -41,7 +41,7 @@
       - [DCE Creation](#dce-creation-2)
       - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers-4)
   - [Legacy Agent Deployment for Options 1-2-3-4-5-6-7](#legacy-agent-deployment-for-options-1-2-3-4-5-6-7)
-    - [**Download and install the agents needed to collect logs for Microsoft Sentinel**](#download-and-install-the-agents-needed-to-collect-logs-for-microsoft-sentinel)
+    - [Download and install the agents needed to collect logs for Microsoft Sentinel](#download-and-install-the-agents-needed-to-collect-logs-for-microsoft-sentinel)
     - [Option 1  -  MS Exchange Management Log collection](#option-1-----ms-exchange-management-log-collection-1)
     - [Option 2 - Security, Application, System for Exchange Servers](#option-2---security-application-system-for-exchange-servers-1)
     - [Option 3 - Security for Domain controllers located in the Exchange AD sites](#option-3---security-for-domain-controllers-located-in-the-exchange-ad-sites)
@@ -646,7 +646,7 @@ If you plan to collect information:
 * For Options 3, the agent needs to be deployed on Domains Controllers located in the Exchange AD sites. This option is still in Beta.
 * For Options 4, the agent needs to be deployed on ALL Domains Controllers. This option is still in Beta.
 
-### **Download and install the agents needed to collect logs for Microsoft Sentinel**
+### Download and install the agents needed to collect logs for Microsoft Sentinel
 
 This section needs to be be executed only once per server.
 
