@@ -27,6 +27,10 @@ possibility of such damages
 .NOTES
     Developed by ksangui@microsoft.com and Nicolas Lepagnez (nilepagn@microsoft.com)
 
+    Version : 7.6.0.1 - Released : 26/07/2024 - nilepagn
+        - Adding Try-Catch on Get-AutomationVariable Test
+        - Correct a bug on Get-LastVersion with Write-LogMessage
+
     Version : 7.6.0.0 - Released : 02/04/2024 - nilepagn
         - Adding possibility of storing USD logs in a storage instead of displaying them in the console
         - Adding a level of logs to display in the console
@@ -197,7 +201,7 @@ Param (
     [switch] $IsOutsideAzureAutomation
 )
 
-$ESICollectorCurrentVersion = "7.6.0.0"
+$ESICollectorCurrentVersion = "7.6.0.1"
 if ($GetVersion) {return $ESICollectorCurrentVersion}
 
 $Script:SupportedConfigurationVersion = "2.4"
@@ -2962,7 +2966,7 @@ $Script:SupportedConfigurationVersion = "2.4"
 
         if ($script:UpdateVersionCheckingDeactivated) 
         { 
-            Write-LogMessage "Update Version Checking Deactivated" -Level Information 
+            Write-LogMessage "Update Version Checking Deactivated" -Level Info 
         }
         
         $CurrentVersion = $ESICollectorCurrentVersion
@@ -2986,7 +2990,7 @@ $Script:SupportedConfigurationVersion = "2.4"
             }
             else
             {
-                Write-LogMessage "Script is up to date. Version : $CurrentVersion" -Level Information
+                Write-LogMessage "Script is up to date. Version : $CurrentVersion" -Level Info
             }
 
         }
@@ -3816,7 +3820,13 @@ $Global:isRunbook = if (-not $IsOutsideAzureAutomation)
     {
         if (!($null -eq (Get-Command "Get-AutomationVariable" -ErrorAction SilentlyContinue)))
         {
-            $TestVariable = Get-AutomationVariable -Name TenantName -ErrorAction SilentlyContinue
+            try {
+                $TestVariable = Get-AutomationVariable -Name TenantName -ErrorAction SilentlyContinue
+            }
+            catch {
+                $TestVariable = $null
+            }
+
             if ($null -eq (Get-Module -Name Orchestrator* -ErrorAction SilentlyContinue) -and $null -eq $TestVariable)
             {
                 $false
