@@ -538,33 +538,199 @@ There are 2 methods to deploy the DCE :
 
 2. Method 2 - Manual Deployment of Azure DCR
 
-   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-MessageTrackingLogs.json)
-   2. Table Creation in Workspace
-   3. From the **Azure Portal**, navigate to **Workspace Analytics** and select your target Workspace
-   4. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
-   5. In the Basics tab, enter **MessageTrackingLog** on the Table name
-   6. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
-   7. Select **Endpoint** created in the previous steps
-   8. In the Schema and Transformation tab, choose the downloaded sample file
-   9. Upload the file that was download in step 1 
-   10. Click on **Transformation Editor**
-   11. In the **transformation field**, enter the following KQL request :
-``` powershell
-source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
+   First of all, we need to create the table in the workspace. The table will be used to ingest the logs. By default we use the table name **MessageTrackingLog_CL**. If you want to use another name, you need to update the DCR with the new table name.
+
+   To create the table, using an ARM templace (the best way). Here the steps to create the table :
+   1.  Click on the **Deploy to Azure** button below:
+          [![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/sentinel-ESI-HTTPProxyCustomTable)
+   2.  Select the preferred **Subscription, Resource Group, Location** and **Analytic Workspace Name**.
+   3.  Click **Review + Create** and **Create**
+
+<details>
+   <summary>If you want to create the table manually, follow this section</summary>
+
+   To create the table manually, you can follow multiple methods, explained [here](https://learn.microsoft.com/azure/azure-monitor/logs/create-custom-table?tabs=azure-powershell-1%2Cazure-portal-2%2Cazure-portal-3&WT.mc_id=Portal-fx#create-a-custom-table). Here the steps to create the table using the Cloud Shell PowerShell :
+
+   1. Open the **Azure Cloud Shell** and select **PowerShell**
+   2. Copy and paste and Execute the following script in the Cloud Shell to create the table.
+
+```PowerShell
+
+$tableParams = @'
+ {
+     "properties": {
+         "schema": {
+                "name": "MessageTrackingLog_CL",
+                "columns": [
+                         {
+                             "name": "directionality",
+                             "type": "string"
+                         },
+                         {
+                             "name": "reference",
+                             "type": "string"
+                         },
+                         {
+                             "name": "source",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TimeGenerated",
+                             "type": "datetime"
+                         },
+                         {
+                             "name": "clientHostname",
+                             "type": "string"
+                         },
+                         {
+                             "name": "clientIP",
+                             "type": "string"
+                         },
+                         {
+                             "name": "connectorId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "customData",
+                             "type": "string"
+                         },
+                         {
+                             "name": "eventId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "internalMessageId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "logId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "messageId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "messageInfo",
+                             "type": "string"
+                         },
+                         {
+                             "name": "messageSubject",
+                             "type": "string"
+                         },
+                         {
+                             "name": "networkMessageId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "originalClientIp",
+                             "type": "string"
+                         },
+                         {
+                             "name": "originalServerIp",
+                             "type": "string"
+                         },
+                         {
+                             "name": "recipientAddress",
+                             "type": "string"
+                         },
+                         {
+                             "name": "recipientCount",
+                             "type": "string"
+                         },
+                         {
+                             "name": "recipientStatus",
+                             "type": "string"
+                         },
+                         {
+                             "name": "relatedRecipientAddress",
+                             "type": "string"
+                         },
+                         {
+                             "name": "returnPath",
+                             "type": "string"
+                         },
+                         {
+                             "name": "senderAddress",
+                             "type": "string"
+                         },
+                         {
+                             "name": "senderHostname",
+                             "type": "string"
+                         },
+                         {
+                             "name": "serverIp",
+                             "type": "string"
+                         },
+                         {
+                             "name": "sourceContext",
+                             "type": "string"
+                         },
+                         {
+                             "name": "schemaVersion",
+                             "type": "string"
+                         },
+                         {
+                             "name": "messageTrackingTenantId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "totalBytes",
+                             "type": "string"
+                         },
+                         {
+                             "name": "transportTrafficType",
+                             "type": "string"
+                         },
+                         {
+                             "name": "FilePath",
+                             "type": "string"
+                         }
+                     ]
+         }
+     }
+ }
+ '@
+
 ```
-   1. Click **Run** and after **Apply**
-   2. Click **Next**, then click **Create**
-   3.  From the Azure Portal, navigate to **Azure Data collection rules**
-   4.  Select the previously created DCR, like **DCR-Option6-MessageTrackingLogs**
-   5.  In **Data Sources,** add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking*.log** in file pattern, **MessageTrackingLog_CL** in Table Name
-   6.  In Transform field, enter the following KQL request : 
+
+   3. Copy, Replace, Paste and execute the following parameters with your own values:
+
+```PowerShell
+$SubscriptionID = 'YourGUID'
+$ResourceGroupName = 'YourResourceGroupName'
+$WorkspaceName = 'YourWorkspaceName'
+
+```
+
+   4. Execute the Following Cmdlet to create the table:
+
+```PowerShell
+Invoke-AzRestMethod -Path "/subscriptions/$SubscriptionID/resourcegroups/$ResourceGroupName/providers/microsoft.operationalinsights/workspaces/$WorkspaceName/tables/MessageTrackingLog_CL?api-version=2021-12-01-preview" -Method PUT -payload $tableParams
+
+```
+
+</details>
+
+After the table creation, you can create the DCR :
+
+   1. From the Azure Portal, navigate to [Azure Data collection rules](https://portal.azure.com/#view/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/~/dataCollectionRules).
+   2. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option6-MessageTrackingLogs**
+   3. Select **Endpoint** created in the previous steps
+   4. In the Resource Tab, add your Exchange Servers. This can be added after also.
+   5. In **Collect and Deliver**, add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\Logs\MessageTracking*.log** in file pattern, **MessageTrackingLog_CL** in Table Name
+   6. In Transform field, enter the following KQL request :
+
 ```powershell
-source | extend TimeGenerated = todatetime(['date-time']) | extend clientHostname = ['client-hostname'], clientIP = ['client-ip'], connectorId = ['connector-id'], customData = ['custom-data'], eventId = ['event-id'], internalMessageId = ['internal-message-id'], logId = ['log-id'], messageId = ['message-id'], messageInfo = ['message-info'], messageSubject = ['message-subject'], networkMessageId = ['network-message-id'], originalClientIp = ['original-client-ip'], originalServerIp = ['original-server-ip'], recipientAddress= ['recipient-address'], recipientCount= ['recipient-count'], recipientStatus= ['recipient-status'], relatedRecipientAddress= ['related-recipient-address'], returnPath= ['return-path'], senderAddress= ['sender-address'], senderHostname= ['server-hostname'], serverIp= ['server-ip'], sourceContext= ['source-context'], schemaVersion=['schema-version'], messageTrackingTenantId = ['tenant-id'], totalBytes = ['total-bytes'], transportTrafficType = ['transport-traffic-type'] | project-away ['client-ip'], ['client-hostname'], ['connector-id'], ['custom-data'], ['date-time'], ['event-id'], ['internal-message-id'], ['log-id'], ['message-id'], ['message-info'], ['message-subject'], ['network-message-id'], ['original-client-ip'], ['original-server-ip'], ['recipient-address'], ['recipient-count'], ['recipient-status'], ['related-recipient-address'], ['return-path'], ['sender-address'], ['server-hostname'], ['server-ip'], ['source-context'], ['schema-version'], ['tenant-id'], ['total-bytes'], ['transport-traffic-type']
+ source | extend d = split(RawData,',') | extend TimeGenerated =todatetime(d[0]) ,clientIP =tostring(d[1]) ,clientHostname =tostring(d[2]) ,serverIp=tostring(d[3]) ,senderHostname=tostring(d[4]) ,sourceContext=tostring(d[5]) ,connectorId =tostring(d[6]) ,source=tostring(d[7]) ,eventId =tostring(d[8]) ,internalMessageId =tostring(d[9]) ,messageId =tostring(d[10]) ,networkMessageId =tostring(d[11]) ,recipientAddress=tostring(d[12]) ,recipientStatus=tostring(d[13]) ,totalBytes=tostring(d[14]) ,recipientCount=tostring(d[15]) ,relatedRecipientAddress=tostring(d[16]) ,reference=tostring(d[17]) ,messageSubject =tostring(d[18]) ,senderAddress=tostring(d[19]) ,returnPath=tostring(d[20]) ,messageInfo =tostring(d[21]) ,directionality=tostring(d[22]) ,messageTrackingTenantId =tostring(d[23]) ,originalClientIp =tostring(d[24]) ,originalServerIp =tostring(d[25]) ,customData=tostring(d[26]) ,transportTrafficType =tostring(d[27]) ,logId =tostring(d[28]) ,schemaVersion=tostring(d[29]) | project-away d,RawData
 ```
-   1.   Click on **Add data source**
+
+   7.  In the **destination field**, add a new Destination and select the Workspace where you have previously created the Custom Table
+   8.  Click on 'Add data source'
+   9.  Fill other optionnal parameters and click **Next : Review + Create**
 
 #### Assign DCR to all Exchange servers
+
 1. From the **Azure Portal**, navigate to **Azure Data collection rules**
 2. Select the DCR
 3. Click **Settings / Resources**
@@ -591,42 +757,380 @@ There are 2 methods to deploy the DCE :
 
 2. Method 2 - Manual Deployment of Azure DCR
 
-   1. Download the Example file from [Microsoft Sentinel GitHub](https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Custom/ESI-HttpProxyLogs.json)
-   2. Table Creation in Workspace
-   3. From the **Azure Portal**, navigate to Workspace Analytics and select your target Workspace
-   4. Click in **Tables**, click **+ Create** at the top and select New **Custom log (DCR-Based)**
-![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image46.png)
-   5. In the Basics tab, enter **ExchangeHttpProxy** on the Table name
-   6. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option7-HTTPProxyLogsss**
-   7. Select **Endpoint** created in the previous steps
-   8. Click **Create**
-   9. In the Schema and Transformation tab, choose the downloaded sample file
-   10. Upload the file that was download in step 1 
-   11. Click on **Transformation Editor**
-   12. In the **transformation field**, enter the following KQL request : 
-   ```powershell
-   source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
-   ```
-   13. Click **Run** and after **Apply**
-   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image47.png)
-   14. Click **Next**, then click **Create**
-   15. From the Azure Portal, navigate to **Azure Data collection rules**.
-   16. Select the previously created DCR, like **DCR-Option7-HTTPProxyLogs**.
-   18. In **Data Sources,** add a Data Source type **Custom Text logs** and enter **C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Autodiscover*.log** in file pattern, **ExchangeHttpProxy_CL** in Table Name. 
-   19. In Transform field, enter the following KQL request : 
-   ```powershell
-   source | extend TimeGenerated = todatetime(DateTime) | project-away DateTime
-   ```
-   20. Repeat this for all folders :
-      1.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Eas*.log
-      2.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ecp*.log
-      3.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ews*.log
-      4.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Mapi*.log
-      5.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Oab*.log
-      6.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Owa*.log
-      7.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\OwaCalendar*.log
-      8.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\PowerShell*.log
-      9.  C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\RpcHttp*.log
+   First of all, we need to create the table in the workspace. The table will be used to ingest the logs. By default we use the table name **MessageTrackingLog_CL**. If you want to use another name, you need to update the DCR with the new table name.
+
+   To create the table, using an ARM templace (the best way). Here the steps to create the table :
+   1.  Click on the **Deploy to Azure** button below:
+          [![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://aka.ms/sentinel-ESI-MessageTrackingCustomTable)
+   2.  Select the preferred **Subscription, Resource Group, Location** and **Analytic Workspace Name**.
+   3.  Click **Review + Create** and **Create**
+
+<details>
+   <summary>If you want to create the table manually, follow this section</summary>
+
+   To create the table manually, you can follow multiple methods, explained [here](https://learn.microsoft.com/azure/azure-monitor/logs/create-custom-table?tabs=azure-powershell-1%2Cazure-portal-2%2Cazure-portal-3&WT.mc_id=Portal-fx#create-a-custom-table). Here the steps to create the table using the Cloud Shell PowerShell :
+
+   1. Open the **Azure Cloud Shell** and select **PowerShell**
+   2. Copy and paste and Execute the following script in the Cloud Shell to create the table.
+
+```PowerShell
+
+$tableParams = @'
+ {
+     "properties": {
+          "schema": {
+                 "name": "ExchangeHttpProxy_CL",
+                 "columns": [
+                         {
+                             "name": "AccountForestLatencyBreakup",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ActivityContextLifeTime",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ADLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "AnchorMailbox",
+                             "type": "string"
+                         },
+                         {
+                             "name": "AuthenticatedUser",
+                             "type": "string"
+                         },
+                         {
+                             "name": "AuthenticationType",
+                             "type": "string"
+                         },
+                         {
+                             "name": "AuthModulePerfContext",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackEndCookie",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackEndGenericInfo",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackendProcessingLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackendReqInitLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackendReqStreamLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackendRespInitLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackendRespStreamLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BackEndStatus",
+                             "type": "string"
+                         },
+                         {
+                             "name": "BuildVersion",
+                             "type": "string"
+                         },
+                         {
+                             "name": "CalculateTargetBackEndLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ClientIpAddress",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ClientReqStreamLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ClientRequestId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ClientRespStreamLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "CoreLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "DatabaseGuid",
+                             "type": "string"
+                         },
+                         {
+                             "name": "EdgeTraceId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ErrorCode",
+                             "type": "string"
+                         },
+                         {
+                             "name": "GenericErrors",
+                             "type": "string"
+                         },
+                         {
+                             "name": "GenericInfo",
+                             "type": "string"
+                         },
+                         {
+                             "name": "GlsLatencyBreakup",
+                             "type": "string"
+                         },
+                         {
+                             "name": "HandlerCompletionLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "HandlerToModuleSwitchingLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "HttpPipelineLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "HttpProxyOverhead",
+                             "type": "string"
+                         },
+                         {
+                             "name": "HttpStatus",
+                             "type": "string"
+                         },
+                         {
+                             "name": "IsAuthenticated",
+                             "type": "string"
+                         },
+                         {
+                             "name": "KerberosAuthHeaderLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "MajorVersion",
+                             "type": "string"
+                         },
+                         {
+                             "name": "Method",
+                             "type": "string"
+                         },
+                         {
+                             "name": "MinorVersion",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ModuleToHandlerSwitchingLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "Organization",
+                             "type": "string"
+                         },
+                         {
+                             "name": "PartitionEndpointLookupLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "Protocol",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ProtocolAction",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ProxyAction",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ProxyTime",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RequestBytes",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RequestHandlerLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RequestId",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ResourceForestLatencyBreakup",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ResponseBytes",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RevisionVersion",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RouteRefresherLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RoutingHint",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RoutingLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RoutingStatus",
+                             "type": "string"
+                         },
+                         {
+                             "name": "RoutingType",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ServerHostName",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ServerLocatorHost",
+                             "type": "string"
+                         },
+                         {
+                             "name": "ServerLocatorLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "SharedCacheLatencyBreakup",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TargetOutstandingRequests",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TargetServer",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TargetServerVersion",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TotalAccountForestLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TotalGlsLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TotalRequestTime",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TotalResourceForestLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TotalSharedCacheLatency",
+                             "type": "string"
+                         },
+                         {
+                             "name": "UrlHost",
+                             "type": "string"
+                         },
+                         {
+                             "name": "UrlQuery",
+                             "type": "string"
+                         },
+                         {
+                             "name": "UrlStem",
+                             "type": "string"
+                         },
+                         {
+                             "name": "UserADObjectGuid",
+                             "type": "string"
+                         },
+                         {
+                             "name": "UserAgent",
+                             "type": "string"
+                         },
+                         {
+                             "name": "TimeGenerated",
+                             "type": "datetime"
+                         },
+                         {
+                             "name": "FilePath",
+                             "type": "string"
+                         }
+                     ]
+          }
+      }
+  }
+  '@
+
+```
+
+   3. Copy, Replace, Paste and execute the following parameters with your own values:
+
+```PowerShell
+$SubscriptionID = 'YourGUID'
+$ResourceGroupName = 'YourResourceGroupName'
+$WorkspaceName = 'YourWorkspaceName'
+
+```
+
+   4. Execute the Following Cmdlet to create the table:
+
+```PowerShell
+Invoke-AzRestMethod -Path "/subscriptions/$SubscriptionID/resourcegroups/$ResourceGroupName/providers/microsoft.operationalinsights/workspaces/$WorkspaceName/tables/ExchangeHttpProxy_CL?api-version=2021-12-01-preview" -Method PUT -payload $tableParams
+
+```
+
+</details>
+
+After the table creation, you can create the DCR :
+
+   1. From the Azure Portal, navigate to [Azure Data collection rules](https://portal.azure.com/#view/Microsoft_Azure_Monitoring/AzureMonitoringBrowseBlade/~/dataCollectionRules).
+   2. Click **Create new data collection** rule and Enter the name of the rule **DCR-Option7-HTTPProxyLogs**
+   3. Select **Endpoint** created in the previous steps
+   4. In the Resource Tab, add your Exchange Servers. This can be added after also.
+   5. In **Collect and Deliver**, add a Data Source type **Custom Text logs** 
+   6. In File Pattern, add the following pattern:
+
+```Text
+'C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Autodiscover\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Eas\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ecp\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Ews\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Mapi\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Oab\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\Owa\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\OwaCalendar\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\PowerShell\*.log','C:\Program Files\Microsoft\Exchange Server\V15\Logging\HttpProxy\RpcHttp\*.log'
+```
+
+   7. In Table Name, enter **ExchangeHttpProxy_CL**
+   8. In Transform field, enter the following KQL request :
+
+```powershell
+  source | extend d = split(RawData,',') | extend DateTime=todatetime(d[0]),RequestId=tostring(d[1]) ,MajorVersion=tostring(d[2]) ,MinorVersion=tostring(d[3]) ,BuildVersion=tostring(d[4]) ,RevisionVersion=tostring(d[5]) ,ClientRequestId=tostring(d[6]) ,Protocol=tostring(d[7]) ,UrlHost=tostring(d[8]) ,UrlStem=tostring(d[9]) ,ProtocolAction=tostring(d[10]) ,AuthenticationType=tostring(d[11]) ,IsAuthenticated=tostring(d[12]) ,AuthenticatedUser=tostring(d[13]) ,Organization=tostring(d[14]) ,AnchorMailbox=tostring(d[15]) ,UserAgent=tostring(d[16]) ,ClientIpAddress=tostring(d[17]) ,ServerHostName=tostring(d[18]) ,HttpStatus=tostring(d[19]) ,BackEndStatus=tostring(d[20]) ,ErrorCode=tostring(d[21]) ,Method=tostring(d[22]) ,ProxyAction=tostring(d[23]) ,TargetServer=tostring(d[24]) ,TargetServerVersion=tostring(d[25]) ,RoutingType=tostring(d[26]) ,RoutingHint=tostring(d[27]) ,BackEndCookie=tostring(d[28]) ,ServerLocatorHost=tostring(d[29]) ,ServerLocatorLatency=tostring(d[30]) ,RequestBytes=tostring(d[31]) ,ResponseBytes=tostring(d[32]) ,TargetOutstandingRequests=tostring(d[33]) ,AuthModulePerfContext=tostring(d[34]) ,HttpPipelineLatency=tostring(d[35]) ,CalculateTargetBackEndLatency=tostring(d[36]) ,GlsLatencyBreakup=tostring(d[37]) ,TotalGlsLatency=tostring(d[38]) ,AccountForestLatencyBreakup=tostring(d[39]) ,TotalAccountForestLatency=tostring(d[40]) ,ResourceForestLatencyBreakup=tostring(d[41]) ,TotalResourceForestLatency=tostring(d[42]) ,ADLatency=tostring(d[43]) ,SharedCacheLatencyBreakup=tostring(d[44]) ,TotalSharedCacheLatency=tostring(d[45]) ,ActivityContextLifeTime=tostring(d[46]) ,ModuleToHandlerSwitchingLatency=tostring(d[47]) ,ClientReqStreamLatency=tostring(d[48]) ,BackendReqInitLatency=tostring(d[49]) ,BackendReqStreamLatency=tostring(d[50]) ,BackendProcessingLatency=tostring(d[51]) ,BackendRespInitLatency=tostring(d[52]) ,BackendRespStreamLatency=tostring(d[53]) ,ClientRespStreamLatency=tostring(d[54]) ,KerberosAuthHeaderLatency=tostring(d[55]) ,HandlerCompletionLatency=tostring(d[56]) ,RequestHandlerLatency=tostring(d[57]) ,HandlerToModuleSwitchingLatency=tostring(d[58]) ,ProxyTime=tostring(d[59]) ,CoreLatency=tostring(d[60]) ,RoutingLatency=tostring(d[61]) ,HttpProxyOverhead=tostring(d[62]) ,TotalRequestTime=tostring(d[63]) ,RouteRefresherLatency=tostring(d[64]) ,UrlQuery=tostring(d[65]) ,BackEndGenericInfo=tostring(d[66]) ,GenericInfo=tostring(d[67]) ,GenericErrors=tostring(d[68]) ,EdgeTraceId=tostring(d[69]) ,DatabaseGuid=tostring(d[70]) ,UserADObjectGuid=tostring(d[71]) ,PartitionEndpointLookupLatency=tostring(d[72]) ,RoutingStatus=tostring(d[73]) | extend TimeGenerated = DateTime  | project-away d,RawData,DateTime | project-away d,RawData,DateTime
+```
+
+   7.  In the **destination field**, add a new Destination and select the Workspace where you have previously created the Custom Table
+   8.  Click on 'Add data source'
+   9.  Fill other optionnal parameters and click **Next : Review + Create**
+
 
 #### Assign DCR to all Exchange servers
 
