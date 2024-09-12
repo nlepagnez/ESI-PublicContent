@@ -41,6 +41,10 @@
 **.NOTES**
     Developed by ksangui@microsoft.com and Nicolas Lepagnez
     
+    Version : 7.6.0.1 - Released : 26/07/2024 - nilepagn
+        - Adding Try-Catch on Get-AutomationVariable Test
+        - Correct a bug on Get-LastVersion with Write-LogMessage
+        - 
     Version : 7.6.0.0 - Released : 02/04/2024 - nilepagn
         - Adding possibility of storing USD logs in a storage instead of displaying them in the console
         - Adding a level of logs to display in the console
