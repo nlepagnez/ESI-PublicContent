@@ -5,7 +5,7 @@ There are several solution to reach this goal, here a solution that also could b
 The solution is to create a separate **Resource Group** for storing the Workbook and delegate the appropriate permission to a group.
 
 - [Workbooks](#workbooks)
-  - [Group creati- Workbooks](#group-creati--workbooks)
+  - [Group creation](#group-creation)
   - [Creation of the custom role to access Log Analytics](#creation-of-the-custom-role-to-access-log-analytics)
   - [Create a dédicated workspace for the workbook](#create-a-dédicated-workspace-for-the-workbook)
   - [Set Permissions on the Resource Group](#set-permissions-on-the-resource-group)
@@ -15,7 +15,7 @@ The solution is to create a separate **Resource Group** for storing the Workbook
 
 It is recommended to do the delegation on a group rather than a user.
 
-## Group creati- [Workbooks](#workbooks)
+## Group creation
 on in Entra ID
 1. Create the group in EntraID
    1. Example ESI_Workbook_Delegation
