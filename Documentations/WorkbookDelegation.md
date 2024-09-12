@@ -1,11 +1,7 @@
 # Workbooks
 
-If the teams that needs to review the Workbook are not part of the Sentinel Team, delegation should be set.
-There are several solution to reach this goal, here a solution that also could be adapted.
-The solution is to create a separate **Resource Group** for storing the Workbook and delegate the appropriate permission to a group.
-
 - [Workbooks](#workbooks)
-  - [Group creation](#group-creation)
+  - [Group creation in Entra ID](#group-creation-in-entra-id)
   - [Creation of the custom role to access Log Analytics](#creation-of-the-custom-role-to-access-log-analytics)
   - [Create a dédicated workspace for the workbook](#create-a-dédicated-workspace-for-the-workbook)
   - [Set Permissions on the Resource Group](#set-permissions-on-the-resource-group)
@@ -13,10 +9,14 @@ The solution is to create a separate **Resource Group** for storing the Workbook
   - [Save the Workbook in the dedicated Resource Group](#save-the-workbook-in-the-dedicated-resource-group)
   - [Access to the workbook](#access-to-the-workbook)
 
+
+If the teams that needs to review the Workbook are not part of the Sentinel Team, delegation should be set.
+There are several solution to reach this goal, here a solution that also could be adapted.
+The solution is to create a separate **Resource Group** for storing the Workbook and delegate the appropriate permission to a group.
+
 It is recommended to do the delegation on a group rather than a user.
 
-## Group creation
-on in Entra ID
+## Group creation in Entra ID
 1. Create the group in EntraID
    1. Example ESI_Workbook_Delegation
    2. Add appropriate Entra ID account in the group
