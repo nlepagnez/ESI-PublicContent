@@ -214,11 +214,11 @@ To be able to collect Exchange Online information and to be able to retrieve Use
    3. Replace the GUID in **$MI_ID** = "XXXXXXXXXXX" with the GUID of your Managed Identity
 3. Launch the script with a **Global-Administrator** account
 > Attention this script requires **MSGraph Modules and Admin Consent** to access to your tenant with Microsoft Graph.
-The script will add 3 permissions to the Managed identity:
+>The script will add 3 permissions to the Managed identity:
    1. **Exchange Online ManageAsApp permission**
    2. **User.Read.All on Microsoft Graph API**
    3. **Group.Read.All on Microsoft Graph API**
-4. Exchange Online Role Assignment
+1. Exchange Online Role Assignment
    1. In **Entra**, as a **Global Administrator**, go to **Roles and Administrators**
    2. Select **Global Reader** role and click to **Add assignments**
    3. Click on **No member selected** and search your **Managed Identity account Name** beginning by the name of your automation account like **ESI-Collector**. Select it and click on **Select**
