@@ -20,7 +20,7 @@
     - [Agents Deployment](#agents-deployment)
       - [Deployment of the Azure Arc-enabled servers](#deployment-of-the-azure-arc-enabled-servers)
       - [Deployment Azure Monitor Agent](#deployment-azure-monitor-agent)
-    - [Option 1  -  MS Exchange Management Log collection](#option-1-----ms-exchange-management-log-collection)
+    - [Option 1  -  MSExchange Management Log collection](#option-1-----msexchange-management-log-collection)
       - [DCR Creation](#dcr-creation)
       - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers)
     - [Option 2 - Security, Application, System for Exchange Servers](#option-2---security-application-system-for-exchange-servers)
@@ -42,7 +42,7 @@
       - [Assign DCR to all Exchange servers](#assign-dcr-to-all-exchange-servers-4)
   - [Legacy Agent Deployment for Options 1-2-3-4-5-6-7](#legacy-agent-deployment-for-options-1-2-3-4-5-6-7)
     - [Download and install the agents needed to collect logs for Microsoft Sentinel](#download-and-install-the-agents-needed-to-collect-logs-for-microsoft-sentinel)
-    - [Option 1  -  MS Exchange Management Log collection](#option-1-----ms-exchange-management-log-collection-1)
+    - [Option 1  -  MSExchange Management Log collection](#option-1-----msexchange-management-log-collection-1)
     - [Option 2 - Security, Application, System for Exchange Servers](#option-2---security-application-system-for-exchange-servers-1)
     - [Option 3 - Security for Domain controllers located in the Exchange AD sites](#option-3---security-for-domain-controllers-located-in-the-exchange-ad-sites)
     - [Option 4 - Security for ALL Domain controllers](#option-4---security-for-all-domain-controllers)
@@ -231,7 +231,7 @@ This file can be found in the **Config** folder. This folder is located in the f
 
 This connector is used to collect additionals logs :
 
-* MS Exchange Management logs from the Event Viewer : Also called Option 1
+* MSExchange Management logs from the Event Viewer : Also called Option 1
 * Security, Application, System for Exchange Servers : Also called Option 2
 * Security for Domain controllers located in the Exchange AD sites : Also called Option 3
 * Security for ALL Domain controllers : Also called Option 4
@@ -322,7 +322,7 @@ After the Deployment, the extension can be view **Azure Arc/Azure Arc resources/
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image29.png)
 
 
-### Option 1  -  MS Exchange Management Log collection
+### Option 1  -  MSExchange Management Log collection
 
 Option 1 is necessary for the following Workbooks :
 
@@ -335,7 +335,7 @@ There are 2 methods to deploy the DCR :
 
 1. Method 1 - Azure Resource Manager (ARM) Template. Use this method for automated deployment of the DCR
    1. Go the **Microsoft Exchange Logs and Events** data connector Page
-   2. Extend the section **[Option 1] MS Exchange Management Log collection / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**
+   2. Extend the section **[Option 1] MSExchange Management Log collection / Data Collection Rules - When Azure Monitor Agent is used / Option 1 - Azure Resource Manager (ARM) Template**
    3. Click on **Deploy to Azure**
    4. Select the preferred **Subscription**, **Resource Group**, **Region**
    5. Enter **Workspace Name**
@@ -352,7 +352,7 @@ There are 2 methods to deploy the DCR :
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image32.png)
    4. In the **Resources** tab, click **+ Add Resources** and select  your **Exchange Servers**
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image33.png)
-   5. In **'Collect and deliver'**, add a Data Source type 'Windows Event logs' and select 'Custom' option, enter '**MS Exchange Management**' as expression and Add it
+   5. In **'Collect and deliver'**, add a Data Source type 'Windows Event logs' and select 'Custom' option, enter '**MSExchange Management**' as expression and Add it
 ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image34.png)
    6. Click **Add data source** and click **Next Destination**
    7. In destination Type select **Azure Monitor Logs** and in **Desitnation Details** select the appropriate **Sentinel workspace**
@@ -1163,7 +1163,7 @@ This section needs to be be executed only once per server.
    4. Click on **Download Windows Agent (64 bit)**
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image11.png)
 
-### Option 1  -  MS Exchange Management Log collection
+### Option 1  -  MSExchange Management Log collection
 
 Option 1 is necessary for the following Workbooks :
 
@@ -1176,7 +1176,7 @@ Configure the logs to be collected - Configure the Events you want to collect an
 2. Click **Legacy agents management**
 3. Select **Windows Event logs**
 4. Click **Add Windows event log**
-5. Enter **MS Exchange Management** as log name
+5. Enter **MSExchange Management** as log name
 6. Collect **Error**, **Warning** and **Information** types
 7. Click **Apply**
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image14.png)
