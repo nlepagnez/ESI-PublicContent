@@ -153,8 +153,8 @@ Choose ONE from the following two deployment options to deploy the connector and
       4. Repeat the step for the following modules : **Microsoft.Graph.Authentication, Microsoft.Graph.Users and Microsoft.Graph.Groups**
    1. Method 2 : Go to in **Runbook Environments(Preview)**
       1. Click on **Create**
-
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image54.png)
+
       2. Give a **name** for the Runtime environment
       3. **Language**, select **Powershell**
       4.  **Version**, select **5.1**
