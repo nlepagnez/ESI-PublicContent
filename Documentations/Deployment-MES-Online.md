@@ -127,8 +127,12 @@ Choose ONE from the following two deployment options to deploy the connector and
    2. **Option 1 - Azure Resource Manager (ARM) Template**
    3. Click on **Deploy to Azure**
    4. Select the preferred **Subscription**, **Resource Group**, **Region**
-   5. Enter **Workspace Name**
-   6. Click **Next** and **Create**
+   5. Automation **Account_ESI-DataCollector_name**
+   6. Automation **Account_ESI-DataCollector_tenant name** - Enter the FQDN of your primary domain
+   7. Enter **Workspace Name**
+   8. Click **Next** and **Create**
+   ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image80.png)
+
 
 #### Method 2 - Manual Deployment of Azure Automation
 1. Create the Azure Automation Account
