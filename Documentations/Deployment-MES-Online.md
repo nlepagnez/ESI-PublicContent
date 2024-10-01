@@ -131,6 +131,7 @@ Choose ONE from the following two deployment options to deploy the connector and
    6. Automation **Account_ESI-DataCollector_tenant name** - Enter the FQDN of your primary domain
    7. Enter **Workspace Name**
    8. Click **Next** and **Create**
+   
    ![alt text](https://github.com/nlepagnez/ESI-PublicContent/blob/main/Documentations/Images/Image80.png)
 
 
